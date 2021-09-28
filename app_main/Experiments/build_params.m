@@ -152,7 +152,7 @@ function [params, nnConfig, qLearningConfig] = build_params(params_experiment_ro
                     conv_network{l} =  Activation(activation_function);
                 end
 
-                elseif layer_type == "P"
+            elseif layer_type == "P"
                 pooling_type = string(layer_config(2));
 
                 if num_configs > 2
@@ -172,7 +172,6 @@ function [params, nnConfig, qLearningConfig] = build_params(params_experiment_ro
 	num_layers_network = length(layers_network);
 	network = cell([1, num_layers_network]);
 	
-    input_dense_custom = [];
 	
 	% D-64-kaiming-input_dense | A-relu | D-64-kaiming- | A-relu | D-6-xavier
 	
@@ -185,19 +184,29 @@ function [params, nnConfig, qLearningConfig] = build_params(params_experiment_ro
 	        output = str2num(layer_config(2));
 	        
 	        init_weights_algorithm = "xavier";
-	        if num_configs > 2
-	            init_weights_algorithm = string(layer_config(3));
-	        end
+            if num_configs >= 2
+                init_weights_algorithm = string(layer_config(3));
+            end
+            if num_configs == 2 || num_configs == 3
+                network{l} = Dense(output, init_weights_algorithm);
+            end
 	        
-	        if num_configs > 3
-	            input_dense_custom = str2num(layer_config(4));
+            if num_configs > 3
+                config_value = layer_config(4);
+                
+                if config_value == "auto"
+                    network{l} = Dense(output, init_weights_algorithm, input_dense);
+                else
+                    input_dense_custom = str2num(config_value);
+                    if isempty(input_dense_custom)
+                        network{l} = Dense(output, init_weights_algorithm);
+                    else
+                        network{l} = Dense(output, init_weights_algorithm, input_dense_custom);
+                    end
+                end
             end
+        
             
-            if isempty(input_dense_custom)
-                network{l} = Dense(output, init_weights_algorithm, input_dense);
-            else
-                network{l} = Dense(output, init_weights_algorithm, input_dense_custom);
-            end
 	        
 	        
 	        

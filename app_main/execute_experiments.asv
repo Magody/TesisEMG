@@ -1,7 +1,7 @@
-function execute_experiments(model_name, ...
-    path_to_framework, path_to_data, verbose_level, experiment_ids)
+function execute_experiments(model_name, experiment_ids, ...
+    path_to_framework, path_to_data, verbose_level)
 
-    % execute_experiments("test", "/home/magody/programming/MATLAB/deep_learning_from_scratch/magody_framework", '/home/magody/programming/MATLAB/tesis/Data/', 3,  [0]);
+    % execute_experiments("test", [0], "/home/magody/programming/MATLAB/deep_learning_from_scratch/magody_framework", '/home/magody/programming/MATLAB/tesis/Data/', 3);
 
 
     addpath(genpath(path_to_framework));
@@ -34,9 +34,6 @@ function execute_experiments(model_name, ...
         fprintf("Generating orientation...\n");
     end
     assignin('base','packetEMG',     false); 
-    %{
-    
-    %}
     Code_0(1, path_to_data);  % params.rangeDownTrain
     orientation      = evalin('base', 'orientation');
     dataPacket = evalin('base','dataPacket');
@@ -46,8 +43,8 @@ function execute_experiments(model_name, ...
     context('orientation') = orientation;
     context('dataPacket') = dataPacket;
     
-    filename_model = "model_" + model_name;
     
+    filename_model = "model_" + model_name;
 
 
     
