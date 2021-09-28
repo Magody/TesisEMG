@@ -1,0 +1,268 @@
+body{
+  background-image: url("https://previews.123rf.com/images/gonin/gonin1507/gonin150700073/42848307-abstract-blue-white-geometrical-web-background.jpg");
+  background-repeat: repeat;
+}
+#INPUT{
+  background: white;
+}
+.container-menu{
+display: flex;
+margin: 2rem;
+}
+
+.img_menu {
+width: 10rem;
+height: 10rem;
+background: black;
+border-radius: 1rem;
+position: absolute;
+}
+
+.menu{
+width: 10rem;
+height: 10rem;
+display:flex;
+margin: auto;
+}
+
+.option{
+color: white;
+margin: auto;
+background: blue;
+border-radius: 1rem;
+padding: 0.5rem;
+cursor: pointer;
+position: relative;
+z-index: 1;
+width: 50%;
+}
+
+.option:hover {
+background: green;
+}
+
+
+
+.rec-est-container{
+display: flex;
+height: 25rem;
+
+}
+.rec-est-container > .rec-est-sample{
+display: flex;
+flex-direction:column;
+flex: 4;
+border: 1px solid black;
+}
+
+.rec-est-container > .rec-est-sample > .rec-est-title {
+display: flex;
+margin-left: auto;
+margin-right: auto;
+padding: 0.5rem;
+background: purple;
+}
+
+.rec-est-container > .rec-est-sample > .rec-est-menu {
+display: flex;
+margin-left: auto;
+margin-right: auto;
+padding: 0.2rem;
+background: yellow;
+}
+
+.rec-est-container > .rec-est-sample > .rec-est-menu > button {
+margin: 0.5rem;
+}
+
+.rec-est-container > .rec-est-sample > .rec-est-signal {
+display: flex;
+max-width: 100%;
+height: 30rem;
+padding: 0.2rem;
+position: relative;
+}
+
+.rec-est-container > .rec-est-sample > .rec-est-signal > div {
+display: flex;
+}
+
+.rec-est-container > .rec-est-pred{
+margin: auto;
+margin-left: 2rem;
+margin-right: 2rem;
+display: flex;
+flex-direction:column;
+flex: 1;
+border: 1px solid brown;
+}
+
+.rec-est-container > .rec-est-pred > .rec-est-pred-title{
+display: flex;
+background: blue;
+margin-left: auto;
+margin-right: auto;
+padding: 0.5rem;
+}
+
+.rec-est-container > .rec-est-pred > .rec-est-pred-image{
+display: flex;
+max-width: 100%;
+height: 5rem;
+background: orange;
+
+padding: 1rem;
+}
+
+.rec-est-container > .rec-est-pred > .rec-est-pred-image > img{
+max-width: 100%;
+max-height: 5rem;
+margin-left: auto;
+margin-right: auto;
+}
+
+
+.rec-est-container > .rec-est-pred > .rec-est-pred-gesture {
+max-width: 100%;
+margin: 2rem;
+background: blue;
+display: flex;
+}
+
+.rec-est-container > .rec-est-pred > .rec-est-pred-gesture > button {
+margin-left: auto;
+margin-right: auto;
+}
+
+
+.rec-stream-container{
+display: flex;
+height: 30rem;
+}
+.rec-stream-container > .rec-stream-sample{
+display: flex;
+flex-direction:column;
+flex: 4;
+align-items: stretch;
+border: 1px solid black;
+}
+
+.rec-stream-container > .rec-stream-sample > .rec-stream-title {
+display: flex;
+margin-left: auto;
+margin-right: auto;
+padding: 0.5rem;
+background: purple;
+}
+
+.rec-stream-container > .rec-stream-sample > .rec-stream-menu {
+display: flex;
+margin-left: auto;
+margin-right: auto;
+padding: 0.2rem;
+background: yellow;
+height: 3rem;
+}
+
+.rec-stream-container > .rec-stream-sample > .rec-stream-menu > button {
+margin: 0.5rem;
+}
+
+.rec-stream-container > .rec-stream-sample > .rec-stream-signal {
+display: flex;
+max-width: 100%;
+height: 15rem;
+padding: 0.2rem;
+border: 1px solid green;
+}
+
+.rec-stream-container > .rec-stream-pred{
+margin: auto;
+margin-left: 2rem;
+margin-right: 2rem;
+display: flex;
+flex-direction:column;
+flex: 1;
+border: 1px solid brown;
+}
+
+.rec-stream-container > .rec-stream-pred > .rec-stream-pred-title{
+display: flex;
+background: blue;
+margin-left: auto;
+margin-right: auto;
+padding: 0.5rem;
+}
+
+.rec-stream-container > .rec-stream-pred > .rec-stream-pred-image{
+display: flex;
+max-width: 100%;
+height: 5rem;
+background: orange;
+
+padding: 1rem;
+}
+
+.rec-stream-container > .rec-stream-pred > .rec-stream-pred-image > img{
+max-width: 100%;
+max-height: 5rem;
+margin-left: auto;
+margin-right: auto;
+}
+
+
+.rec-stream-container > .rec-stream-pred > .rec-stream-pred-gstreamure {
+max-width: 100%;
+margin: 2rem;
+background: blue;
+display: flex;
+}
+
+.rec-stream-container > .rec-stream-pred > .rec-stream-pred-gstreamure > button {
+margin-left: auto;
+margin-right: auto;
+}
+
+
+.sliders{
+display: flex;
+background: pink;
+margin-left: auto;
+margin-right: auto;
+}
+
+.slider{
+background: yellow;
+margin: 1rem;
+}
+
+.custom-slider {
+-webkit-appearance: none;
+width: 100%;
+height: 25px;
+background: #d3d3d3;
+outline: none;
+opacity: 0.7;
+-webkit-transition: .2s;
+transition: opacity .2s;
+}
+
+.custom-slider:hover {
+opacity: 1;
+}
+
+.custom-slider::-webkit-slider-thumb {
+-webkit-appearance: none;
+appearance: none;
+width: 25px;
+height: 25px;
+background: #4CAF50;
+cursor: pointer;
+}
+
+.custom-slider::-moz-range-thumb {
+width: 25px;
+height: 25px;
+background: #4CAF50;
+cursor: pointer;
+}

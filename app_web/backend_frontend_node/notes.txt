@@ -1,0 +1,14 @@
+// client message
+{
+    id: number,
+    data: "type->string"
+}
+
+// server message
+{
+    id: number,  // id of message or status. 0 is reserved for error
+    server_message: string,
+    metadata: number=-client_id,
+    data: "type->string"  //type is for clients to convert the string
+
+}

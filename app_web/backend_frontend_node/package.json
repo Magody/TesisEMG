@@ -1,0 +1,13 @@
+{
+  "dependencies": {
+    "chart.js": "^2.9.4",
+    "clientside-require": "^4.7.2",
+    "cors": "^2.8.5",
+    "express": "^4.17.1",
+    "http": "^0.0.1-security",
+    "node-static": "^0.7.11",
+    "nodemon": "^2.0.7",
+    "package.json": "^2.0.1",
+    "websocket": "^1.0.33"
+  }
+}

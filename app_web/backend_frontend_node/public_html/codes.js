@@ -1,0 +1,15 @@
+const CODES = {
+    ERROR: 0,
+    AUTH: 1001,
+    PAIR_FUNCTION: 1002,
+    CONNECT_ROOM: 1003,
+    BEGIN_STREAM: 1004,
+    END_STREAM: 1005,
+    ANSWER_PREDICTION: 1006,
+
+    CHART: 2001,
+    PREDICTION: 2002
+
+}
+
+module.exports = CODES

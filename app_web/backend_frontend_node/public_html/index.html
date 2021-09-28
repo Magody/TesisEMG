@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+
+<head>
+  <meta charset="utf-8" />
+  <title></title>
+  
+  
+</head>
+
+<body>
+  <h1 id="room_info"></h1>
+<!--
+  <button id="mock_disparo" onclick="disparo()">MOCK disparo</button>
+  <button id="mock_corte_izquierda" onclick="corte_izquierda()">MOCK corte_izquierda</button>
+  <button id="mock_corte_derecha" onclick="corte_derecha()">MOCK corte_derecha</button>
+  <button onclick="focusPrevious()">MOCK focusPrevious</button>
+  <button onclick="focusNext()">MOCK focusNext</button>
+  <button onclick="selectElement()">MOCK Select</button>
+  <hr>-->
+  <center>
+
+    <button onclick="abrirEnlace('https://google.com')" class="buttonDemo tabable">BOTÓN 1</button>
+    <button onclick="abrirEnlace('https://youtube.com')" class="buttonDemo tabable">BOTÓN 2</button>
+    <button onclick="abrirEnlace('https://facebook.com')" class="buttonDemo tabable">BOTÓN 3</button>
+
+    <hr>
+    <canvas width="1000" height="400" id="dibujito"></canvas>
+  </center>
+
+  <script type="text/javascript">
+    var room_info = document.getElementById('room_info');
+    var canvas = document.getElementById("dibujito")
+    var lienzo = canvas.getContext("2d")
+    const ANCHO = 1000;
+    const ALTO = 400;
+    const LARGO_LINEA = 90;
+
+    dibujarRectanguloLleno(0, 0, ANCHO, ALTO, 'white', lienzo)
+      
+    
+
+    var socket = new WebSocket('ws://192.168.1.10:8080', 'echo-protocol');
+
+    socket.onopen = function () {
+
+      const client_msg = {
+        id: 1001,  // 1001 = room única creada para una connección
+        data: "onopen"
+      }
+      socket.send(JSON.stringify(client_msg));
+    };
+
+
+
+    socket.onmessage = function (message) {
+
+      var data = JSON.parse(message.data)
+      console.log(data)
+
+     
+
+    };
+
+    socket.onerror = function (error) {
+      console.log('WebSocket error: ' + error);
+    };
+
+    
+
+    function disparo(){
+      // alert("disparo")
+      let centro_x = Math.ceil(Math.random() * ANCHO)
+      let centro_y = Math.ceil(Math.random() * ALTO)
+
+      dibujarLinea(
+        centro_x-(LARGO_LINEA/2), centro_y-(LARGO_LINEA/2), 
+        centro_x+(LARGO_LINEA/2), centro_y+(LARGO_LINEA/2), 
+        'red', lienzo
+      )
+
+      dibujarLinea(
+        centro_x-(LARGO_LINEA/2), centro_y+(LARGO_LINEA/2), 
+        centro_x+(LARGO_LINEA/2), centro_y-(LARGO_LINEA/2), 
+        'red', lienzo
+      )
+
+
+    }
+
+    function corte_izquierda(){
+      // alert("corte_izquierda")
+
+      let centro_x = Math.ceil(Math.random() * ANCHO)
+      let centro_y = Math.ceil(Math.random() * ALTO)
+
+      dibujarLinea(
+        centro_x-(LARGO_LINEA*1.5), centro_y, 
+        centro_x+LARGO_LINEA/2, centro_y, 
+        'blue', lienzo
+      )
+
+      dibujarLinea(
+        centro_x-(LARGO_LINEA*1.5), centro_y, 
+        centro_x-LARGO_LINEA, centro_y-(LARGO_LINEA/2), 
+        'blue', lienzo
+      )
+
+      dibujarLinea(
+        centro_x-(LARGO_LINEA*1.5), centro_y, 
+        centro_x-LARGO_LINEA, centro_y+(LARGO_LINEA/2), 
+        'blue', lienzo
+      )
+
+    }
+
+    function corte_derecha(){
+      // alert("corte_derecha")
+      let centro_x = Math.ceil(Math.random() * ANCHO)
+      let centro_y = Math.ceil(Math.random() * ALTO)
+
+      dibujarLinea(
+        centro_x-LARGO_LINEA/2, centro_y, 
+        centro_x+(LARGO_LINEA*1.5), centro_y, 
+        'green', lienzo
+      )
+
+      dibujarLinea(
+        centro_x+(LARGO_LINEA*1.5), centro_y, 
+        centro_x+(LARGO_LINEA), centro_y-(LARGO_LINEA/2), 
+        'green', lienzo
+      )
+
+      dibujarLinea(
+        centro_x+(LARGO_LINEA*1.5), centro_y, 
+        centro_x+(LARGO_LINEA), centro_y+(LARGO_LINEA/2), 
+        'green', lienzo
+      )
+    }
+
+    function abrirEnlace(url){
+
+      window.open(url); 
+
+    }
+
+    var index = -1;
+
+    function focusPrevious(){
+
+      var tabbables = document.querySelectorAll(".tabable"); //get all tabable elements
+      // console.log(tabbables)
+      
+      index -= 1;
+      if(index < 0){
+        index = tabbables.length-1;
+      }
+
+      tabbables[index].focus();
+
+    }
+
+
+    
+    function dibujarLinea(x1, y1, x2, y2, color, lienzo){
+      lienzo.beginPath()  // inicia el dibujo
+      lienzo.strokeStyle = color
+      lienzo.lineWidth = 10  // Freddy mostró esto luego, no lo puso todo a la vez
+      lienzo.moveTo(x1, y1)
+      lienzo.lineTo(x2, y2)
+      lienzo.stroke()  // dibuja el camino
+      lienzo.closePath()  // levanta el lapiz, termina
+      // Importante: si no pongo el closePath la siguiente linea inicia desde el último punto
+    }
+
+    function dibujarRectanguloLleno(x, y, ancho, alto, color, lienzo){
+      lienzo.beginPath()  // inicia el dibujo
+      lienzo.fillStyle = color
+      lienzo.rect(x, y, ancho, alto)
+      lienzo.fill()  // dibuja el camino
+      lienzo.closePath()  // levanta el lapiz, termina
+      // Importante: si no pongo el closePath la siguiente linea inicia desde el último punto
+    }
+
+  </script>
+</body>
+
+</html>

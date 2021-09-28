@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+
+<head>
+  <meta charset="utf-8" />
+  <title>Recalibración</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <script src="js/require.js"></script>
+  <script src="js/jquery.js"></script>
+  <script src="js/canvasjs.min.js"></script>
+  <script src="js/plotly.js"></script>
+</head>
+
+<body>
+
+
+  <h1 id="room_info"></h1>
+
+
+  <h3 id="server_message"></h3>
+
+  <div class="container-menu">
+    <div class="menu">
+    <img class="img_menu" src="https://definicion.de/wp-content/uploads/2017/09/estatico.jpg" />
+      <div class="option" onclick="estatico()"> Estático</div>
+  </div>
+    <div class="menu">
+    <img class="img_menu" src="https://i.stack.imgur.com/TLp3W.png" />
+    
+      <div class="option" onclick="stream()"> Stream </div>
+  </div>
+  </div>
+
+
+  <div class="rec-est-container" id="est" style="display: none;">
+  
+    <div class="rec-est-sample">
+      <div class="rec-est-title">Title</div>
+      <div class="rec-est-menu">
+        <button>Grabar muestra</button>
+        <button>Guardar</button>
+        <button>Repetir</button>
+      </div>
+      <div class="rec-est-signal">
+        <div id="chartContainer1"></div>
+      </div>
+    </div>
+    
+    
+    <div class="rec-est-pred">
+      <div class="rec-est-pred-title">Title</div>
+      <div class="rec-est-pred-image">
+        <img src="https://pbs.twimg.com/profile_images/758084549821730820/_HYHtD8F.jpg"/>
+      </div>
+      <div class="rec-est-pred-gesture">
+        <button>Ok</button>
+        <button>No Ok</button>
+      </div>
+    </div>
+    
+  </div>
+
+
+  <div class="rec-stream-container"  id="stream">
+  
+    <div class="rec-stream-sample">
+      <div class="rec-stream-title">Title</div>
+      <div class="rec-stream-menu">
+        <button onclick="beginStream()">Iniciar stream</button>
+        <button onclick="stopStream()">Detener stream</button>
+      </div>
+      <div class="sliders">
+        <div class="slider">
+        <p>Custom range slider:</p>
+    <input type="range" min="1" max="100" value="50" class="custom-slider" id="myRange">
+        </div>
+        <div class="slider">
+        <p>Custom range slider:</p>
+    <input type="range" min="1" max="100" value="50" class="custom-slider" id="myRange">
+        </div>
+        <div class="slider">
+        <p>Custom range slider:</p>
+    <input type="range" min="1" max="100" value="50" class="custom-slider" id="myRange">
+        </div>
+      </div>
+      <div class="rec-stream-signal">
+        <div class="wrapper">
+          <div id="chart"></div>
+
+        </div>
+      </div>
+    </div>
+    
+    
+    <div class="rec-stream-pred">
+      <div class="rec-stream-pred-title">Title</div>
+      <div class="rec-stream-pred-image">
+        <img src="https://pbs.twimg.com/profile_images/758084549821730820/_HYHtD8F.jpg"/>
+      </div>
+      <div class="rec-stream-pred-gstreamure">
+        <button>Ok</button>
+        <button>No Ok</button>
+        <button>Anular</button>
+      </div>
+    </div>
+    
+  </div>
+
+  <script src="js/main.js"></script>
+  
+</body>
+
+</html>

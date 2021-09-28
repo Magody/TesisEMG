@@ -1,0 +1,8 @@
+- mapGroundTruthToLabelsWithPts ajustar, portion to see
+- Y si pre sacamos las features primero? se va a ahorrar un monton de tiempo conforme avanzan los experimentos
+- h1: mucho no gesture, no es muy util que aprenda solo a identificar no gesture, más métricas y matriz de clasificación
+- en algunas partes como learnFromexperience hago transpuesta porque si, es mejor manejar tamaños bien desde antes
+- reducir espacio de la Data
+- Usar regularización y dropout
+- asegurar que pooling y convolutional funcionan con [1, 2] y otras modificaciones
+- preprocesar orientation

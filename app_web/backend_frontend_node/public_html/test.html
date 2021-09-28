@@ -1,0 +1,50 @@
+<!DOCTYPE HTML>
+<html>
+<head>  
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+
+</head>
+<body>
+
+<div class="wrapper">
+    <div id="chart"></div>
+</div>
+<button id="button_parar">Parar</button>
+
+<script>
+  var botonParar = document.getElementById("button_parar");
+  botonParar.addEventListener("click",detener);
+  
+  
+  function getData() {
+    return Math.random();
+  } 
+
+  Plotly.plot('chart',[{x: 3,
+    y:[getData()],
+    type:'line'
+  }]);
+  var cnt = 0;
+  var maximo = 100;
+  var intervalo = setInterval(function(){
+    
+    
+    Plotly.extendTraces('chart',{ y:[[getData()]]}, [0]);
+    cnt++;
+    if(cnt > maximo) {
+      Plotly.relayout('chart',{
+        xaxis: {
+          range: [cnt-maximo,cnt]
+        }
+      });
+    }
+    
+  },200);
+  function detener()
+  {
+    clearInterval(intervalo);
+  }
+  
+  </script>
+</body>
+</html>
