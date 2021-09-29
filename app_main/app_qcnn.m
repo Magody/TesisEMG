@@ -10,11 +10,12 @@ path_to_framework = "/home/magody/programming/MATLAB/deep_learning_from_scratch/
 addpath(genpath(path_to_framework));
 addpath(genpath('utils'));
 addpath('RLSetup');
+addpath(genpath('LabEPN'));
 
 %% Init general parameters
 context = containers.Map();
 verbose_level = 10;
-RepTraining = 20;
+RepTraining = 5;
 RepTesting = 15;
 
 
