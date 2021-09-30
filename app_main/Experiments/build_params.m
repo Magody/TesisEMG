@@ -99,7 +99,6 @@ function [params, nnConfig, qLearningConfig] = build_params(params_experiment_ro
 	index_begin = index_begin + 1;
 
 
-	shape_input = [1, params.window_size, 8];
 
 	total_episodes = params.RepTraining * params.num_users;
 	total_episodes_test = params.RepTesting * params.num_users_test;
@@ -126,6 +125,7 @@ function [params, nnConfig, qLearningConfig] = build_params(params_experiment_ro
 		conv_network{num_layers_conv_network+1} = Reshape();
 		
 		
+        shape_input = [1, params.window_size, 8];
 		
 		for l=1:num_layers_conv_network
 		    layer_definition = layers_conv_network(l);
