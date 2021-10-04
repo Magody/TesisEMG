@@ -34,17 +34,8 @@ function execute_experiments(model_name, ...
         fprintf("Generating orientation...\n");
     end
     assignin('base','packetEMG',     false); 
-    %{
     
-    %}
-    Code_0(1, path_to_data);  % params.rangeDownTrain
-    orientation      = evalin('base', 'orientation');
-    dataPacket = evalin('base','dataPacket');
-    if verbose_level > 0
-        fprintf("Orientation generated\n");
-    end
-    context('orientation') = orientation;
-    context('dataPacket') = dataPacket;
+    rotation_generated = false;
     
     filename_model = "model_" + model_name;
     
@@ -54,6 +45,7 @@ function execute_experiments(model_name, ...
     excel_dir = dir_model + "/results.xlsx";
 
 
+        t_begin = tic;
     for index_experiment_ids=1:number_experiments
 
         % just get the experiment id from csv table
@@ -67,6 +59,20 @@ function execute_experiments(model_name, ...
         end
         [params, nnConfig, qLearningConfig] = build_params(params_experiment_row, context);
         
+        %{
+
+        %}
+        if ~rotation_generated
+            Code_0(1, path_to_data);  % params.rangeDownTrain
+            orientation      = evalin('base', 'orientation');
+            dataPacket = evalin('base','dataPacket');
+            if verbose_level > 0
+                fprintf("Orientation generated\n");
+            end
+            context('orientation') = orientation;
+            context('dataPacket') = dataPacket;
+            rotation_generated = true;
+        end
         % generate_rng(params.seed_rng);
 
         q_neural_network = QNeuralNetwork(params.sequential_conv_network, params.sequential_network, ...
@@ -77,12 +83,8 @@ function execute_experiments(model_name, ...
         if verbose_level > 0
             fprintf("*****Training with %d users, each one with %d gestures*****\n", params.num_users, params.RepTraining);
         end
-        t_begin = tic;
         history_episodes_train = q_neural_network.runEpisodes(@getRewardEMG, false, context, verbose_level-1);
-        t_end = toc(t_begin);
-        if verbose_level > 0
-            fprintf("Elapsed time: %.4f [minutes]\n", t_end/60);
-        end
+        
 
         % % plot results
         % disp(history_episodes_train('history_gestures_name'));
@@ -188,6 +190,10 @@ function execute_experiments(model_name, ...
 
         
 
+    end
+    t_end = toc(t_begin);
+    if verbose_level > 0
+        fprintf("Elapsed time: %.4f [minutes]\n", t_end/60);
     end
 
 
