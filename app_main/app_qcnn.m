@@ -256,7 +256,7 @@ for numExample=1:len_gamereplay
     reward_er = valid_replay{numExample}.reward;
     
     if reward_er < 0
-        continue;
+        % continue;
     end
     
     index_valid = index_valid + 1;
