@@ -4,18 +4,19 @@ clear all; %#ok<CLALL>
 close all;
 
 seed_rng = 44;
+context = containers.Map();
 
 %% Libs
 path_to_framework = "/home/magody/programming/MATLAB/deep_learning_from_scratch/magody_framework";
+path_to_data = '/home/magody/programming/MATLAB/tesis/Data/';
 addpath(genpath(path_to_framework));
 addpath(genpath('utils'));
 addpath('RLSetup');
 addpath(genpath('LabEPN'));
 
 %% Init general parameters
-context = containers.Map();
 verbose_level = 10;
-RepTraining = 5;
+RepTraining = 20;
 RepTesting = 15;
 
 
@@ -23,11 +24,19 @@ list_users = [8]; % [8 200]; 1:306;
 list_users_test = [1]; % [1 2]; 1:306;
 num_users = length(list_users);
 num_users_test = length(list_users_test);
+rangeDown = 26;
+rangeDownTesting = 26;
 
-rangeDown = 1;
-rangeDownTesting = 1;
-
-prepare_environment('/home/magody/programming/MATLAB/tesis/Data/', verbose_level-1);
+on = true;
+off = false;
+environment_options = struct();
+environment_options.post_processing = on;
+environment_options.randomGestures = on;
+environment_options.noGestureDetection = off;
+context('noGestureDetection') = environment_options.noGestureDetection;
+environment_options.rangeValues = 150;
+environment_options.packetEMG = true;
+prepare_environment('/home/magody/programming/MATLAB/tesis/Data/', verbose_level-1, environment_options);
 assignin('base','RepTraining',  RepTraining); % initial value
 context('RepTraining') = RepTraining;
 context('RepTesting') = RepTesting;
@@ -72,13 +81,13 @@ shape_input = [1, window_size, 8];
 total_episodes = RepTraining * num_users;
 total_episodes_test = RepTesting * num_users_test;
 epochs = 1; % epochs inside each NN
-learning_rate = 0.001;
-batch_size = 64;
+learning_rate = 3e-4;
+batch_size = 128;
 gamma = 0.1;
 epsilon = 1;
 decay_rate_alpha = 0.1;
 gameReplayStrategy = 1;
-experience_replay_reserved_space = 20;
+experience_replay_reserved_space = 500;
 loss_type = "mse";
 rewards = struct('correct', 1, 'incorrect', -1);
 
@@ -104,8 +113,10 @@ input_dense = prod(sequential_conv_network.shape_output);% if convolutional netw
 sequential_network = Sequential({
     Dense(64, "kaiming", input_dense), ...
     Activation("relu"), ...
+    Dropout(0.3), ...
     Dense(64, "kaiming"), ...
     Activation("relu"), ...
+    Dropout(0.2), ...
     Dense(6, "xavier"), ...
 });
 
@@ -121,10 +132,41 @@ q_neural_network.setCustomRunEpisodes(@customRunEpisodesEMG);
 
 %% Train
 
+context('tabulation_mode') = 2;
+context('is_preprocessed') = false;
+context('noGestureDetection') = false;
+
 fprintf("*****Training with %d users, each one with %d gestures*****\n", num_users, RepTraining);
         
 t_begin = tic;
-history_episodes_train = q_neural_network.runEpisodes(@getRewardEMG, false, context, verbose_level-1);
+for index_id_user=1:num_users
+    % extracting user vars
+
+    user_real_id = list_users(index_id_user);
+
+    user_folder = "user"+user_real_id;
+
+   
+    % use LabEPN Code 1 for fetching data
+    userData = loadSpecificUserByName(user_folder, path_to_data);
+    index_in_packet = getUserIndexInPacket(dataPacket, user_folder);
+    assignin('base', 'userIndex', index_in_packet);
+    assignin('base','index_user', index_in_packet-2);
+    assignin('base','rangeDown', rangeDown);
+    assignin('base','emgRepetition', rangeDown);
+    energy_index = strcmp(orientation(:,1), userData.userInfo.name);
+    rand_data=orientation{energy_index,6};
+    context('rand_data') = rand_data; 
+
+    context('user_gestures') = userData.training;
+
+
+
+
+    context('offset_user') = (index_id_user-1) * RepTraining;
+
+    history_episodes_train = q_neural_network.runEpisodes(@getRewardEMG, false, context, verbose_level-1);
+end
 
 t_end = toc(t_begin);
 fprintf("Elapsed time: %.4f [minutes]\n", t_end/60);
@@ -167,6 +209,11 @@ fprintf("Train: Mean accuracy for classification window: %.4f\n", train_metrics_
 train_metrics_classification_class = getMetricsFromCorrectIncorrect(history_episodes_train('history_classification_class_correct'), history_episodes_train('history_classification_class_incorrect'));
 fprintf("Train: Mean accuracy for classification class: %.4f\n", train_metrics_classification_class('accuracy'));
 
+train_metrics_classification_recognition = getMetricsFromCorrectIncorrect(history_episodes_train('history_classification_recognition_correct'), history_episodes_train('history_classification_recognition_incorrect'));
+fprintf("Train: Mean accuracy for classification recognition: %.4f\n", train_metrics_classification_recognition('accuracy'));
+
+
+
 % % test
 fprintf("*****Test with %d users, each one with %d gestures*****\n", num_users_test, RepTesting);
 
@@ -184,7 +231,10 @@ test_classif_incorrect = history_episodes_test('history_classification_class_inc
 test_metrics_classification_class_accuracy = sum(test_classif_correct)/sum(test_classif_correct+test_classif_incorrect);
 fprintf("Test: Mean accuracy for classification class: %.4f\n", test_metrics_classification_class_accuracy);
 
-
+test_classif_recognition_correct = history_episodes_test('history_classification_recognition_correct');
+test_classif_recognition_incorrect = history_episodes_test('history_classification_recognition_incorrect');
+test_metrics_classification_class_accuracy = sum(test_classif_recognition_correct)/sum(test_classif_recognition_correct+test_classif_recognition_incorrect);
+fprintf("Test: Mean accuracy for classification recognition: %.4f\n", test_metrics_classification_class_accuracy);
 
 
 %% TSNE, dimension reduction. Table of features and plots
@@ -233,13 +283,13 @@ features_matrix = zeros([len_data_train, q_neural_network.sequential_conv_networ
 classes = {};
 
 
-
+context = containers.Map({'is_test'}, {true});
 
 for index_data=1:len_data_train
     
     x = dataX(:, :, :, index_data);
     [~, y] = max(dataY(index_data, :));  % argmax
-    features = q_neural_network.sequential_conv_network.forward(x);
+    features = q_neural_network.sequential_conv_network.forward(x, context);
     
     
     classes{index_data, 1} = char(class_names(y));
@@ -256,7 +306,7 @@ options('plot_point_size') = 20;
 options('include3D') = false;
 options('save') = false;
 
-options('dir') = 'figures/';
+options('dir') = 'Experiments/debug/';
 options('algorithms') =  [ ...
     struct('distance', 'euclidean','plot', struct('title', 'Euclidean')), ...
     % struct('distance', 'chebychev','plot', struct('title', 'Chebychev')), ...

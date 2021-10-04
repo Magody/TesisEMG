@@ -10,7 +10,7 @@ if nargin < 3
     environment_options = struct();
     environment_options.post_processing = on;
     environment_options.randomGestures = off;
-    environment_options.noGestureDetection = off;
+    environment_options.noGestureDetection = on;
     environment_options.rangeValues = 150;
     environment_options.packetEMG = true;
 end

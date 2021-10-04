@@ -115,11 +115,10 @@ function [params, nnConfig, qLearningConfig] = build_params(params_experiment_ro
 	index_begin = index_begin + 1;
 	num_layers_conv_network = length(layers_conv_network);
 	
-	conv_network = {};
 	input_dense = -1;
     params.sequential_conv_network = Sequential({});
     
-	if num_layers_conv_network > 0
+	if num_layers_conv_network > 1
 	
 		conv_network = cell([1, num_layers_conv_network+1]);
 		conv_network{num_layers_conv_network+1} = Reshape();
@@ -161,7 +160,7 @@ function [params, nnConfig, qLearningConfig] = build_params(params_experiment_ro
                 else
                     conv_network{l} =  Pooling(pooling_type);
                 end
-		    end
+            end
         end
         params.sequential_conv_network = Sequential(conv_network);
 		input_dense = prod(params.sequential_conv_network.shape_output);% if convolutional network exist, sequential_conv_network.shape_output;
@@ -171,9 +170,10 @@ function [params, nnConfig, qLearningConfig] = build_params(params_experiment_ro
 	layers_network = split(string(table2cell(params_experiment_row(1, index_begin))), "|");
 	num_layers_network = length(layers_network);
 	network = cell([1, num_layers_network]);
+	index_begin = index_begin + 1;
 	
 	
-	% D-64-kaiming-input_dense | A-relu | D-64-kaiming- | A-relu | D-6-xavier
+	% D-64-kaiming-input_dense | A-relu | Dropout-0.3 | D-64-kaiming- | A-relu | D-6-xavier
 	
 	for l=1:num_layers_network
 	    layer_definition = layers_network(l);
@@ -217,6 +217,9 @@ function [params, nnConfig, qLearningConfig] = build_params(params_experiment_ro
             else
                 network{l} =  Activation(activation_function);
             end
+        elseif layer_type == "Dropout"    
+            drop = str2num(layer_config(2));
+            network{l} =  Dropout(drop);
 	    end
 	end
 	
@@ -225,6 +228,9 @@ function [params, nnConfig, qLearningConfig] = build_params(params_experiment_ro
 	qLearningConfig = QLearningConfig(params.gamma, params.epsilon_initial, params.gameReplayStrategy, params.experience_replay_reserved_space, total_episodes);
 	qLearningConfig.total_episodes_test = total_episodes_test;
 
+	
+	params.global_epochs = table2array(params_experiment_row(1, index_begin));
+	index_begin = index_begin + 1;
 
     
     
