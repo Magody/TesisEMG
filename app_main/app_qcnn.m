@@ -242,7 +242,7 @@ fprintf("Test: Mean accuracy for classification recognition: %.4f\n", test_metri
 class_names = ["waveOut", "waveIn", "fist", "open", "pinch", "noGesture"]; 
 valid_replay = getCellsNotEmpty(q_neural_network.gameReplay);
 
-len_gamereplay = length(q_neural_network.gameReplay);
+len_gamereplay = length(valid_replay);
 
 dataX = [];
 dataY = [];
@@ -256,7 +256,7 @@ for numExample=1:len_gamereplay
     reward_er = valid_replay{numExample}.reward;
     
     if reward_er < 0
-        % continue;
+        continue;
     end
     
     index_valid = index_valid + 1;
