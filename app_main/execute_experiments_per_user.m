@@ -3,6 +3,9 @@ function execute_experiments_per_user(model_name, ...
     executeEpisodeEMG, noGestureDetection, initial_row_position, is_preprocessed, ...
     experiment_ids)
 
+    model_name = string(model_name);
+    path_to_framework = string(path_to_framework);
+
     %{
     execute_experiments_per_user("test_cnn_experiments", ...
     "/home/magody/programming/MATLAB/deep_learning_from_scratch/magody_framework", ...
@@ -65,7 +68,7 @@ function execute_experiments_per_user(model_name, ...
         % just get the experiment id from csv table
         experiment_id = experiment_ids(index_experiment_ids);
         % only get the row with the set of params for experiment
-        params_experiment_row = parameters(experiment_id+1, :);
+        params_experiment_row = parameters(experiment_id, :);
 
 
         if verbose_level > 0

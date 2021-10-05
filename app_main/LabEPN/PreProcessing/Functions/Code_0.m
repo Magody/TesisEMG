@@ -1,4 +1,12 @@
-function [] = Code_0(emgRepetition, dir_data)
+function [] = Code_0(emgRepetition, dir_data, is_legacy, use_dir_full)
+
+if nargin == 2
+    is_legacy = true;
+end
+
+if nargin == 3
+    use_dir_full = false;
+end
 
 addpath(genpath(dir_data));
 addpath(genpath('PreProcessing'));
@@ -17,8 +25,12 @@ model=2;
 modelSelected='specific';
 assignin('base','modelSelected',modelSelected);
 
-pathOrigin      = horzcat(dir_data,'Specific');
-dataPacket      = orderfields(dir(pathOrigin));
+if use_dir_full
+    pathOrigin = dir_data;
+else
+    pathOrigin      = horzcat(dir_data,'Specific');
+end
+
 
 % ============================== SPECIFIC ===================================
 
@@ -40,6 +52,14 @@ for k=1:dataPacketSize
         usuario     = dataPacket(k).name;
         userFolder  = horzcat(pathOrigin,'/',dataPacket(k).name,'/','userData.mat');
         load(userFolder);
+        
+        if ~is_legacy
+           userData = struct();
+           userData.training = training(:);
+           userData.testing = testing(:);
+           userData.userInfo = userInfo;
+           userData.sync = sync;
+        end
         
         if syncro>0
             for x=1:150

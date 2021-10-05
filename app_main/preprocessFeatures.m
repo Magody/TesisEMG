@@ -1,4 +1,4 @@
-function preprocessFeatures(user_begin, user_end, window_size, stride)
+function preprocessFeatures(user_begin, user_end, window_size, stride, is_legacy)
 
     seed_rng = 44;
     %% Libs
@@ -14,8 +14,14 @@ function preprocessFeatures(user_begin, user_end, window_size, stride)
     list_users = user_begin:user_end; % [1 8]; 1:306
     num_users = length(list_users);
     rangeDown = 1;
-    dir_data = 'C:\Users\Magody\Documents\GitHub\TesisEMG\Data\'; % '/home/magody/programming/MATLAB/tesis/Data/';
-    dit_data_out = dir_data + "preprocessing" + "/";
+	if is_legacy
+		dir_data = 'C:\Users\Magody\Documents\GitHub\TesisEMG\Data\'; % '/home/magody/programming/MATLAB/tesis/Data/';
+		dit_data_out = dir_data + "preprocessing" + "/";
+	else
+		dir_data = 'C:\Users\Magody\Documents\GitHub\TesisEMG\Data\preprocessing\';
+		dit_data_out = dir_data;
+	end
+    
     assignin('base','RepTraining',  RepTraining); % initial value
 
     %% Generating orientation
@@ -31,12 +37,20 @@ function preprocessFeatures(user_begin, user_end, window_size, stride)
     environment_options.rangeValues = 300;
     environment_options.packetEMG = false;
     prepare_environment(dir_data, verbose_level-1, environment_options);
-    Code_0(rangeDown, dir_data);
+    if is_legacy
+         Code_0(rangeDown, dir_data, is_legacy, false);
+    else
+         Code_0(rangeDown, dir_data, is_legacy, true);
+    end
+    
+   
     orientation      = evalin('base', 'orientation');
     dataPacket = evalin('base','dataPacket');
-    model_orientation = dit_data_out + "orientation" + "Win" + window_size + "Stride" + stride + ".mat";
+    model_orientation = 'C:\Users\Magody\Documents\GitHub\TesisEMG\Data\' + "orientation" + "Win" + window_size + "Stride" + stride + ".mat";
     save(model_orientation, "orientation");
 
+    assignin('base','is_legacy',is_legacy);
+    
 
     %% Generating features
     fprintf("Generating table of features\n");
@@ -52,7 +66,7 @@ function preprocessFeatures(user_begin, user_end, window_size, stride)
         % [~, ~, ~] = mkdir(user_full_dir);
 
 
-        userData = loadUserByNameAndDir(user_folder, char(dit_data_out));
+        userData = loadUserByNameAndDir(user_folder, char(dit_data_out), is_legacy);
         index_in_packet = getUserIndexInPacket(dataPacket, user_folder);
         assignin('base', 'userIndex', index_in_packet);
         assignin('base','index_user', index_in_packet-2);
@@ -70,7 +84,7 @@ function preprocessFeatures(user_begin, user_end, window_size, stride)
 
             % emgRepetition = evalin('base','emgRepetition');
 
-            user_gesture = userData.training{rand_data(gesture_number),1};
+            user_gesture = userData.training{rand_data(gesture_number)};
             emg = user_gesture.emg;    
             emg_points = length(emg);
             assignin('base','WindowsSize',  window_size);
@@ -104,7 +118,7 @@ function preprocessFeatures(user_begin, user_end, window_size, stride)
 
         for gesture_number=RepTraining+1:RepTraining+RepTesting
 
-            user_gesture = userData.testing{rand_data(gesture_number)-RepTraining,1};
+            user_gesture = userData.testing{rand_data(gesture_number)-RepTraining};
             if gesture_number == RepTraining+RepTesting
                 disp("");
             end

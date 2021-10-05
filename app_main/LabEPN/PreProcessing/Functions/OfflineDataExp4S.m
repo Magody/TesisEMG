@@ -19,6 +19,9 @@ userIndex       =   evalin('base','userIndex');
 emgRepetition   =   evalin('base','emgRepetition');
 stepControl     =   evalin('base','stepControl');
 
+is_legacy = evalin('base','is_legacy');
+
+
 orientation     =   evalin('base','orientation');
 Stride = evalin('base', 'Stride');
 WindowsSize = evalin('base', 'WindowsSize');
@@ -61,6 +64,14 @@ if userIndex~=dataPacketSize+1
 
     recognitionTestUserData=(horzcat(pathOrigin,'/',dataPacket(userIndex).name,'/','userData.mat'));
     load(recognitionTestUserData);
+    
+    if ~is_legacy
+       userData = struct();
+       userData.training = training(:);
+       userData.testing = testing(:);
+       userData.userInfo = userInfo;
+       userData.sync = sync;        
+    end
 
     repTraining    = length(userData.training);
     repTesting     = length(userData.testing);
