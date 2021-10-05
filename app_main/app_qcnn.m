@@ -15,9 +15,9 @@ addpath('RLSetup');
 addpath(genpath('LabEPN'));
 
 %% Init general parameters
-verbose_level = 10;
-RepTraining = 20;
-RepTesting = 15;
+verbose_level = 2;
+RepTraining = 125;
+RepTesting = 50;
 
 
 list_users = [8]; % [8 200]; 1:306;
@@ -62,7 +62,7 @@ fprintf("Orientation generated\n");
 %% Init Hyper parameters and models
 fprintf("Setting hyper parameters and models\n");
 generate_rng(seed_rng);
-context('interval_for_learning') = 3;  % in each episode will learn this n times more or less
+context('interval_for_learning') = 10;  % in each episode will learn this n times more or less
 window_size = 300;
 stride = 30;
 
@@ -80,14 +80,14 @@ shape_input = [1, window_size, 8];
 
 total_episodes = RepTraining * num_users;
 total_episodes_test = RepTesting * num_users_test;
-epochs = 1; % epochs inside each NN
-learning_rate = 3e-4;
+epochs = 5; % epochs inside each NN
+learning_rate = 0.001;
 batch_size = 128;
 gamma = 0.1;
 epsilon = 1;
 decay_rate_alpha = 0.1;
 gameReplayStrategy = 1;
-experience_replay_reserved_space = 500;
+experience_replay_reserved_space = 100;
 loss_type = "mse";
 rewards = struct('correct', 1, 'incorrect', -1);
 
@@ -116,7 +116,6 @@ sequential_network = Sequential({
     Dropout(0.3), ...
     Dense(64, "kaiming"), ...
     Activation("relu"), ...
-    Dropout(0.2), ...
     Dense(6, "xavier"), ...
 });
 
@@ -307,9 +306,8 @@ options('include3D') = false;
 options('save') = false;
 
 options('dir') = 'Experiments/debug/';
-options('algorithms') =  [ ...
+options('algorithms') =  [ .....
     struct('distance', 'euclidean','plot', struct('title', 'Euclidean')), ...
-    % struct('distance', 'chebychev','plot', struct('title', 'Chebychev')), ...
 ];
 
 history_tsne = generateTSNE(features_matrix, classes, options, verbose_level-1);

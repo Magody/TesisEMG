@@ -44,12 +44,12 @@ context('tabulation_mode') = 2;
 context('is_preprocessed') = true;
 context('noGestureDetection') = false;
 
-epochs = 3; % epochs inside each NN
-learning_rate = 0.0003;
+epochs = 10; % epochs inside each NN
+learning_rate = 0.001;
 batch_size = 128;
 gamma = 0.1;
 epsilon = 1;
-decay_rate_alpha = 0.1;
+decay_rate_alpha = 0.01;
 gameReplayStrategy = 1;
 experience_replay_reserved_space = 100;
 loss_type = "mse";
@@ -67,6 +67,7 @@ sequential_conv_network = Sequential({});
 sequential_network = Sequential({
     Dense(40, "kaiming", 40), ...
     Activation("relu"), ...
+    Dropout(0.5), ...
     Dense(40, "kaiming"), ...
     Activation("relu"), ...
     Dense(6, "xavier"), ...
@@ -76,7 +77,7 @@ nnConfig = NNConfig(epochs, learning_rate, batch_size, loss_type);
 nnConfig.decay_rate_alpha = decay_rate_alpha;
 
 list_users = [1]; % [8 200]; 1:306;
-list_users_test = [1]; % [1 2]; 1:306;
+list_users_test = [208]; % [1 2]; 1:306;
 num_users = length(list_users);
 num_users_test = length(list_users_test);
 context('num_users') = num_users;
@@ -163,6 +164,9 @@ fprintf("Train: Mean accuracy for classification class: %.4f\n", train_metrics_c
 % % test
 fprintf("*****Test with %d users, each one with %d gestures*****\n", num_users_test, RepTesting);
 
+userDataTest = loadUserByNameAndDir("user208", path_to_data, false);
+context('user_gestures') = userDataTest.testing(randperm(numel(userData.training)));
+
 history_episodes_test = q_neural_network.runEpisodes(@getRewardEMG, true, context, verbose_level-1);
 
 fprintf("Test: Mean collected reward %.4f\n", mean(history_episodes_test("history_rewards")));
@@ -176,4 +180,9 @@ test_classif_correct = history_episodes_test('history_classification_class_corre
 test_classif_incorrect = history_episodes_test('history_classification_class_incorrect');
 test_metrics_classification_class_accuracy = sum(test_classif_correct)/sum(test_classif_correct+test_classif_incorrect);
 fprintf("Test: Mean accuracy for classification class: %.4f\n", test_metrics_classification_class_accuracy);
+
+test_recog_correct = history_episodes_test('history_classification_recognition_correct');
+test_recog_incorrect = history_episodes_test('history_classification_recognition_incorrect');
+test_metrics_classification_recognition_accuracy = sum(test_recog_correct)/sum(test_recog_correct+test_recog_incorrect);
+fprintf("Test: Mean accuracy for classification recog: %.4f\n", test_metrics_classification_recognition_accuracy);
 
