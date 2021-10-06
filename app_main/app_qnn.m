@@ -44,12 +44,12 @@ context('tabulation_mode') = 2;
 context('is_preprocessed') = true;
 context('noGestureDetection') = false;
 
-epochs = 10; % epochs inside each NN
+epochs = 5; % epochs inside each NN
 learning_rate = 0.001;
 batch_size = 128;
 gamma = 0.1;
 epsilon = 1;
-decay_rate_alpha = 0.01;
+decay_rate_alpha = 0.1;
 gameReplayStrategy = 1;
 experience_replay_reserved_space = 100;
 loss_type = "mse";
@@ -67,7 +67,6 @@ sequential_conv_network = Sequential({});
 sequential_network = Sequential({
     Dense(40, "kaiming", 40), ...
     Activation("relu"), ...
-    Dropout(0.5), ...
     Dense(40, "kaiming"), ...
     Activation("relu"), ...
     Dense(6, "xavier"), ...
@@ -77,7 +76,7 @@ nnConfig = NNConfig(epochs, learning_rate, batch_size, loss_type);
 nnConfig.decay_rate_alpha = decay_rate_alpha;
 
 list_users = [1]; % [8 200]; 1:306;
-list_users_test = [208]; % [1 2]; 1:306;
+list_users_test = [1]; % [1 2]; 1:306;
 num_users = length(list_users);
 num_users_test = length(list_users_test);
 context('num_users') = num_users;
@@ -96,76 +95,44 @@ q_neural_network = QNeuralNetwork(sequential_conv_network, sequential_network, .
 q_neural_network.setCustomRunEpisodes(@customRunEpisodesEMG);
 
 
-% % Train
-
+%% Train
 
 
 fprintf("*****Training with %d users, each one with %d gestures*****\n", num_users, RepTraining);
         
 t_begin = tic;
+epochs = 10;
+for epoch=1:epochs
+    for index_id_user=1:num_users
+        % extracting user vars
 
-for index_id_user=1:num_users
-    % extracting user vars
+        user_real_id = list_users(index_id_user);
 
-    user_real_id = list_users(index_id_user);
+        user_folder = "user"+user_real_id;
 
-    user_folder = "user"+user_real_id;
+        % just use the feature table in the path to data
+        userData = loadUserByNameAndDir(user_folder, path_to_data, false);
+        context('user_gestures') = userData.training; % (randperm(numel(userData.training)));
 
-    % just use the feature table in the path to data
-    userData = loadUserByNameAndDir(user_folder, path_to_data, false);
-    context('user_gestures') = userData.training(randperm(numel(userData.training)));
-    
-    context('offset_user') = (index_id_user-1) * RepTraining;
+        context('offset_user') = (index_id_user-1) * RepTraining;
 
-    history_episodes_train = q_neural_network.runEpisodes(@getRewardEMG, false, context, verbose_level-1);
+        history_episodes_train = q_neural_network.runEpisodes(@getRewardEMG, false, context, verbose_level-1);
+    end
 end
 t_end = toc(t_begin);
 fprintf("Elapsed time: %.4f [minutes]\n", t_end/60);
 
-% % plot results
-% disp(history_episodes_train('history_gestures_name'));
-figure(1);
-subplot(1,2,1)
-history_rewards = history_episodes_train('history_rewards')';
-plot(history_rewards(:));
-title("Train: Reward");
-
-subplot(1,2,2)
-linear_update_costs = [];
-update_costs_by_episode = history_episodes_train('history_update_costs');
-
-for i=1:length(update_costs_by_episode)
-    costs = update_costs_by_episode{i};
-    linear_update_costs = [linear_update_costs; costs(:)]; 
-end
-plot(linear_update_costs);
-title("Cost");
-
-%{
-subplot(2,3,4)
-train_metrics_classification_window = getMetricsFromCorrectIncorrect(history_episodes_train('history_classification_window_correct'), history_episodes_train('history_classification_window_incorrect'));
-plot(train_metrics_classification_window('accuracy_by_t'));
-title("Acc window");
-fprintf("Train: Mean accuracy for classification window: %.4f\n", train_metrics_classification_window('accuracy'));
- 
-subplot(2,3,5)
-train_metrics_classification_class = getMetricsFromCorrectIncorrect(history_episodes_train('history_classification_class_correct'), history_episodes_train('history_classification_class_incorrect'));
-plot(train_metrics_classification_class('accuracy_by_t'));
-title("Acc classification");
-fprintf("Train: Mean accuracy for classification class: %.4f\n", train_metrics_classification_class('accuracy'));
-
-%}
 train_metrics_classification_window = getMetricsFromCorrectIncorrect(history_episodes_train('history_classification_window_correct'), history_episodes_train('history_classification_window_incorrect'));
 fprintf("Train: Mean accuracy for classification window: %.4f\n", train_metrics_classification_window('accuracy'));
 
 train_metrics_classification_class = getMetricsFromCorrectIncorrect(history_episodes_train('history_classification_class_correct'), history_episodes_train('history_classification_class_incorrect'));
 fprintf("Train: Mean accuracy for classification class: %.4f\n", train_metrics_classification_class('accuracy'));
 
-% % test
+%% test
 fprintf("*****Test with %d users, each one with %d gestures*****\n", num_users_test, RepTesting);
 
-userDataTest = loadUserByNameAndDir("user208", path_to_data, false);
-context('user_gestures') = userDataTest.testing(randperm(numel(userData.training)));
+userDataTest = loadUserByNameAndDir("user1", path_to_data, false);
+context('user_gestures') = userDataTest.testing;
 
 history_episodes_test = q_neural_network.runEpisodes(@getRewardEMG, true, context, verbose_level-1);
 
@@ -185,4 +152,3 @@ test_recog_correct = history_episodes_test('history_classification_recognition_c
 test_recog_incorrect = history_episodes_test('history_classification_recognition_incorrect');
 test_metrics_classification_recognition_accuracy = sum(test_recog_correct)/sum(test_recog_correct+test_recog_incorrect);
 fprintf("Test: Mean accuracy for classification recog: %.4f\n", test_metrics_classification_recognition_accuracy);
-

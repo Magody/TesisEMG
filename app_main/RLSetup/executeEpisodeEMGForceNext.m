@@ -1,4 +1,4 @@
-function history_episode = executeEpisodeEMG(q_neural_network, episode, is_test, functionGetReward, context, verbose_level) 
+function history_episode = executeEpisodeEMGForceNext(q_neural_network, episode, is_test, functionGetReward, context, verbose_level) 
     
     window_size = context('window_size');
     stride = context('stride');
@@ -63,17 +63,22 @@ function history_episode = executeEpisodeEMG(q_neural_network, episode, is_test,
     index_state_end = window_size;
     
     
-    for window=1:num_windows-1
+    % slice = emg(:, index_state_begin:index_state_end, :);slice(:);
+    if is_preprocessed
+        state = features_per_window(1, :)';
+    else
+        state = emg(:, index_state_begin:index_state_end, :);
+    end
+
+    index_state_begin = index_state_begin + stride;
+    index_state_end = index_state_end + stride;
+    
+    step_t = step_t + 1;
+    
+    for window=2:num_windows
         
         step_t = step_t + 1;
-
-
-        % slice = emg(:, index_state_begin:index_state_end, :);slice(:);
-        if is_preprocessed
-            state = features_per_window(window, :)';
-        else
-            state = emg(:, index_state_begin:index_state_end, :);
-        end
+        
         
         [Qval, action] = q_neural_network.selectAction(state, is_test); %#ok<ASGLU>
         
@@ -85,11 +90,17 @@ function history_episode = executeEpisodeEMG(q_neural_network, episode, is_test,
             predictions = [predictions, action];            
         end
 
-        context('real_action') = gt_gestures_labels_num(window+1);
+        context('real_action') = gt_gestures_labels_num(window);
         % context is modified by reference
-        [reward, new_state, finish] = functionGetReward(state, action, context);
+        [reward, ~, ~] = functionGetReward(state, action, context);
         % in this case, new_state is useless
         finish = window == num_windows-1;
+        
+        if is_preprocessed
+            new_state = features_per_window(window, :)';
+        else
+            new_state = emg(:, index_state_begin:index_state_end, :);
+        end
         
         if reward > 0
             classification_window_correct = classification_window_correct + 1;
@@ -148,6 +159,8 @@ function history_episode = executeEpisodeEMG(q_neural_network, episode, is_test,
             TimePoints_vector(1,n1)=  kj(1,2);                 %AQUI CAMBIAR  %1000 puntos
 
         end
+        
+        state = new_state;
 
     end
     
@@ -201,7 +214,7 @@ function history_episode = executeEpisodeEMG(q_neural_network, episode, is_test,
     try
         r1 = evalRecognition(repInfo, response);
     catch
-        warning('EL vector de predicciones esta compuesto por una misma etiqueta -> Func Eval Recog no funciona');
+        % warning('EL vector de predicciones esta compuesto por una misma etiqueta -> Func Eval Recog no funciona');
         
         r1.recogResult=0;
 

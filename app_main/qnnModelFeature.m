@@ -47,14 +47,14 @@ function [accuracy_train, accuracy_test] = qnnModelFeature(params, path_to_data,
         Dense(params.hidden2_neurons, "kaiming"), ...
         Activation("relu"), ...
         Dropout(params.dropout_rate2), ...
-        Dense(6, "xavier"), ...
+        Dense(6, "kaiming"), ...
     });
 
     nnConfig = NNConfig(epochs, learning_rate, batch_size, loss_type);
     nnConfig.decay_rate_alpha = decay_rate_alpha;
 
-    list_users = 208; % [8 200]; 1:306;
-    list_users_test = 306; % [1 2]; 1:306;
+    list_users = 1; % [8 200]; 1:306;
+    list_users_test = 1; % [1 2]; 1:306;
     num_users = length(list_users);
     num_users_test = length(list_users_test);
     context('num_users') = num_users;
@@ -68,7 +68,7 @@ function [accuracy_train, accuracy_test] = qnnModelFeature(params, path_to_data,
     qLearningConfig = QLearningConfig(gamma, epsilon, gameReplayStrategy, experience_replay_reserved_space, total_episodes);
     qLearningConfig.total_episodes_test = total_episodes_test;
     q_neural_network = QNeuralNetwork(sequential_conv_network, sequential_network, ...
-                        nnConfig, qLearningConfig, @executeEpisodeEMG);    % @executeEpisodeEMGImage 
+                        nnConfig, qLearningConfig, @executeEpisodeEMGForceNext);    % @executeEpisodeEMGImage 
 
     q_neural_network.setCustomRunEpisodes(@customRunEpisodesEMG);
 
@@ -110,9 +110,8 @@ function [accuracy_train, accuracy_test] = qnnModelFeature(params, path_to_data,
     test_metrics_classification_recognition = getMetricsFromCorrectIncorrect(history_episodes_test('history_classification_recognition_correct'), history_episodes_test('history_classification_recognition_incorrect'));
 
             
-    accuracy_test = (test_metrics_classification_window('accuracy')*100 + ...
-        test_metrics_classification_class('accuracy')*100 + ...
-        test_metrics_classification_recognition('accuracy')*100)/3;
+    accuracy_test = (test_metrics_classification_class('accuracy')*100 + ...
+        test_metrics_classification_recognition('accuracy')*100)/2;
     
 
 
