@@ -101,8 +101,8 @@ q_neural_network.setCustomRunEpisodes(@customRunEpisodesEMG);
 fprintf("*****Training with %d users, each one with %d gestures*****\n", num_users, RepTraining);
         
 t_begin = tic;
-epochs = 10;
-for epoch=1:epochs
+general_epochs = 5;
+for epoch=1:general_epochs
     for index_id_user=1:num_users
         % extracting user vars
 
