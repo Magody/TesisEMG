@@ -1,16 +1,34 @@
-function history_episode = executeEpisodeEMG(q_neural_network, episode, is_test, functionGetReward, context, verbose_level) 
+function history_episode = executeEpisodeEMG(q_neural_network, episode, type_execution, functionGetReward, context, verbose_level) 
     
-    window_size = context('window_size');
-    stride = context('stride');
-    gestureName = context('gestureName');
-    ground_truth_index = context('ground_truth_index');
-    interval_for_learning = context('interval_for_learning'); 
-    noGestureDetection  = context('noGestureDetection');
+    is_validation_or_test = type_execution ~= 1;
+    is_train_only = type_execution == 1;
+    is_validation_only = type_execution == 2;
+    is_test_only = type_execution == 3;
+    
     classes_name_to_num = containers.Map(["waveOut", "waveIn", "fist", "open", "pinch", "noGesture"], {1, 2, 3, 4, 5, 6});
     classes_num_to_name = containers.Map([1, 2, 3, 4, 5, 6], ["waveOut", "waveIn", "fist", "open", "pinch", "noGesture"]);
     
-    real_class = classes_name_to_num(string(gestureName));
     
+    
+    window_size = context('window_size');
+    stride = context('stride');
+    
+    if is_train_only
+        interval_for_learning = context('interval_for_learning'); 
+        t_for_learning = interval_for_learning; % floor(num_windows/interval_for_learning);
+    end
+    
+    if is_train_only || is_validation_only
+        gestureName = context('gestureName');
+        ground_truth_index = context('ground_truth_index');
+        real_class = classes_name_to_num(string(gestureName));
+    else
+        gestureName = "unknown";
+        real_class = -1;
+    end
+    
+    
+    noGestureDetection  = context('noGestureDetection');
     is_preprocessed = context('is_preprocessed');
     
     if is_preprocessed
@@ -24,18 +42,21 @@ function history_episode = executeEpisodeEMG(q_neural_network, episode, is_test,
         emg = reshape(emg, [1, emg_points, emg_channels]);
         num_windows = getNumberWindows(emg_points, window_size, stride, false);
     end
-    ground_truth_gt = getGroundTruthGT(emg_points, ground_truth_index);
-
-    gt_gestures_pts=zeros([1,num_windows]);
-    gt_gestures_pts(1,1)=window_size;
-
-    for k = 1:num_windows-1
-        gt_gestures_pts(1,k+1)=gt_gestures_pts(1,k)+stride;
-    end
     
-    gt_gestures_labels = mapGroundTruthToLabelsWithPts(gt_gestures_pts, ground_truth_index, gestureName, 0.2);
-    gt_gestures_labels_num = mapGestureLabelsToNumbers(num_windows, gt_gestures_labels);
+    if is_train_only || is_validation_only
+        ground_truth_gt = getGroundTruthGT(emg_points, ground_truth_index);
+        
+        gt_gestures_pts=zeros([1,num_windows]);
+        gt_gestures_pts(1,1)=window_size;
 
+        for k = 1:num_windows-1
+            gt_gestures_pts(1,k+1)=gt_gestures_pts(1,k)+stride;
+        end
+
+        gt_gestures_labels = mapGroundTruthToLabelsWithPts(gt_gestures_pts, ground_truth_index, gestureName, 0.2);
+        gt_gestures_labels_num = mapGestureLabelsToNumbers(num_windows, gt_gestures_labels);
+        
+    end
     
     history_episode = containers.Map();
     update_counter = 0;
@@ -47,12 +68,11 @@ function history_episode = executeEpisodeEMG(q_neural_network, episode, is_test,
     
     
     step_t = 0;
-    t_for_learning = interval_for_learning; % floor(num_windows/interval_for_learning);
+    
     
     etiquetas_labels_predichas_vector = strings([num_windows-1, 1]);
     
     etiquetas_labels_predichas_vector_simplif=strings();
-    predictions = [];
     ProcessingTimes_vector=[];
     TimePoints_vector=[];
     
@@ -67,37 +87,38 @@ function history_episode = executeEpisodeEMG(q_neural_network, episode, is_test,
         
         step_t = step_t + 1;
 
-
-        % slice = emg(:, index_state_begin:index_state_end, :);slice(:);
         if is_preprocessed
             state = features_per_window(window, :)';
         else
             state = emg(:, index_state_begin:index_state_end, :);
         end
         
-        [Qval, action] = q_neural_network.selectAction(state, is_test); %#ok<ASGLU>
+        [Qval, action] = q_neural_network.selectAction(state, is_validation_or_test); %#ok<ASGLU>
         
         % store all predictions
         etiquetas_labels_predichas_vector(window, 1) = classes_num_to_name(action);
-    
-        if action ~= 6 || real_class == 6
-            % if real class is noGesture, we must save the predictions
-            predictions = [predictions, action];            
-        end
+        
+        if is_train_only || is_validation_only
+            context('real_action') = gt_gestures_labels_num(window+1);
+            % context is modified by reference
+            [reward, new_state, finish] = functionGetReward(state, action, context);
+            % in this case, new_state is useless
+            finish = window == num_windows-1;
 
-        context('real_action') = gt_gestures_labels_num(window+1);
-        % context is modified by reference
-        [reward, new_state, finish] = functionGetReward(state, action, context);
-        % in this case, new_state is useless
-        finish = window == num_windows-1;
-        
-        if reward > 0
-            classification_window_correct = classification_window_correct + 1;
+            if reward > 0
+                classification_window_correct = classification_window_correct + 1;
+            else
+                classification_window_incorrect = classification_window_incorrect + 1;
+            end
         else
-            classification_window_incorrect = classification_window_incorrect + 1;
+            % get reward from real environment (human)
+            context('real_action') = "unknown";
+            reward = 0; % unknown reward
         end
         
-        if ~is_test
+        
+        
+        if is_train_only
             q_neural_network.saveExperienceReplay(state, action, reward, new_state, finish);
             
             if mod(step_t, t_for_learning) == 0
@@ -130,7 +151,7 @@ function history_episode = executeEpisodeEMG(q_neural_network, episode, is_test,
             etiquetas_labels_predichas_vector_simplif(1,n1)=etiquetas_labels_predichas_vector(window-1,1);
 
             %obtengo nuevo dato para vector de tiempos
-            TimePoints_vector(1,n1)=stride*window+window_size/2;           %necesito dato de stride y tamaño de ventana de Victor
+            TimePoints_vector(1,n1)=stride*(window-1)+window_size;           %necesito dato de stride y tamaño de ventana de Victor
 
         elseif window== num_windows-1 %==maxWindowsAllowed    % si proceso la ultima ventana de la muestra de señal EMG
 
@@ -144,8 +165,7 @@ function history_episode = executeEpisodeEMG(q_neural_network, episode, is_test,
             etiquetas_labels_predichas_vector_simplif(1,n1)=etiquetas_labels_predichas_vector(window,1);
 
             %obtengo dato final para vector de tiempos
-            kj=size(ground_truth_gt);  %  se supone q son 1000 puntos
-            TimePoints_vector(1,n1)=  kj(1,2);                 %AQUI CAMBIAR  %1000 puntos
+            TimePoints_vector(1,n1)=  stride*(window-1)+window_size;
 
         end
 
@@ -163,10 +183,14 @@ function history_episode = executeEpisodeEMG(q_neural_network, episode, is_test,
         end
     end
     
-    if noGestureDetection || string(gestureName) == "noGesture"
+    if is_train_only || is_validation_only
+        if noGestureDetection || string(gestureName) == "noGesture"
+            class_result = mode(categorical(etiquetas_labels_predichas_vector));
+        else
+            class_result = mode(categorical(etiquetas_labels_predichas_vector_without_NoGesture));
+        end
+    elseif is_test_only
         class_result = mode(categorical(etiquetas_labels_predichas_vector));
-    else
-        class_result = mode(categorical(etiquetas_labels_predichas_vector_without_NoGesture));
     end
 
     %---  POST - Processing: elimino etiquetas espuria
@@ -178,72 +202,74 @@ function history_episode = executeEpisodeEMG(q_neural_network, episode, is_test,
         else
         end  
     end
-
-    % GROUND TRUTH (no depende del modelo)------------
-    repInfo.gestureName =  gestureName;
-    repInfo.groundTruth = ground_truth_gt;
-
     response.vectorOfLabels = categorical(post_processing_result_vector_lables);
-    
     if length(response.vectorOfLabels) == 1
         response.vectorOfLabels = etiquetas_labels_predichas_vector;
     end
-    
-    
     response.vectorOfTimePoints = TimePoints_vector; % OK -----  [40 200 400 600 800 999];
     % tiempo de procesamiento
     response.vectorOfProcessingTimes = ProcessingTimes_vector; % OK -----[0.1 0.1 0.1 0.1 0.1 0.1]; % ProcessingTimes_vector'; % [0.1 0.1 0.1 0.1 0.1 0.1]; % 1xw double                                    %CAMBIAR
     response.class =  categorical(class_result); % OK ----- categorical({'waveIn'});                %aqui tengo que usar la moda probablemente           %CAMBIAR
 
-
-    %-----------------------------------------------
-
-    try
-        r1 = evalRecognition(repInfo, response);
-    catch
-        % warning('EL vector de predicciones esta compuesto por una misma etiqueta -> Func Eval Recog no funciona');
-        
-        r1.recogResult=0;
-
-    end
+ 
+    history_episode('reward_cummulated') = reward_cummulated;
+    history_episode('response') = response;
+    
     
     recognition = 0;
-    
-    if ~isempty(r1.recogResult)
+    if is_train_only || is_validation_only
+        % GROUND TRUTH (no depende del modelo)------------
+        repInfo.gestureName =  gestureName;
+        repInfo.groundTruth = ground_truth_gt;
+        try
+            r1 = evalRecognition(repInfo, response);
+            if ~isnan(r1.overlappingFactor)
+                disp("");
+            end
+        catch
+            % warning('EL vector de predicciones esta compuesto por una misma etiqueta -> Func Eval Recog no funciona');
 
-        if  r1.recogResult==1
-            recognition = 1;
+            r1.recogResult=0;
+
+        end
+
+        
+        
+        if ~isempty(r1.recogResult)
+
+            if  r1.recogResult==1
+                recognition = 1;
+            end
+
+        elseif gestureName == "noGesture"
+            recognition = r1.classResult;
+        end
+
+        if verbose_level > 0
+           fprintf("%s: %s, %d\n", string(gestureName), string(class_result), recognition); 
         end
         
-    elseif gestureName == "noGesture"
-        recognition = r1.classResult;
-    end
+        history_episode('update_costs') = update_costs;
+    
+        history_episode('classification_window_correct') = classification_window_correct;
+        history_episode('classification_window_incorrect') = classification_window_incorrect;
 
-    if verbose_level > 0
-       fprintf("%s: %s, %d\n", string(gestureName), string(class_result), recognition); 
-    end
+        %{
+        if (mode(predictions) == real_class) ~= (string(class_result) == string(gestureName))
+            disp("Incongruency");
+        end
+        %}
+        is_correct_class = string(class_result) == string(gestureName);
+        history_episode('classification_class_correct') = is_correct_class;
+        history_episode('classification_class_incorrect') = ~is_correct_class;
 
-    history_episode('reward_cummulated') = reward_cummulated;
-    history_episode('update_costs') = update_costs;
-    
-    history_episode('classification_window_correct') = classification_window_correct;
-    history_episode('classification_window_incorrect') = classification_window_incorrect;
-    
-    %{
-    if (mode(predictions) == real_class) ~= (string(class_result) == string(gestureName))
-        disp("Incongruency");
+
+        is_correct_recognition = recognition == 1;
+        history_episode('classification_recognition_correct') = is_correct_recognition;
+        history_episode('classification_recognition_incorrect') = ~is_correct_recognition;
+        
     end
-    %}
-    is_correct_class = string(class_result) == string(gestureName);
-    history_episode('classification_class_correct') = is_correct_class;
-    history_episode('classification_class_incorrect') = ~is_correct_class;
     
     
-    is_correct_recognition = recognition == 1;
-    history_episode('classification_recognition_correct') = is_correct_recognition;
-    history_episode('classification_recognition_incorrect') = ~is_correct_recognition;
-    
-    
-    history_episode('response') = response;
     
 end

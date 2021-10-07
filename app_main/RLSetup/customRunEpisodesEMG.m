@@ -1,24 +1,37 @@
-function history_episodes = customRunEpisodesEMG(q_neural_network, functionGetReward, is_test, context, verbose_level)
+function history_episodes = customRunEpisodesEMG(q_neural_network, functionGetReward, type_execution, context, verbose_level)
     % each user has their episodes
 
     window_size = context('window_size');
     stride = context('stride');
     
-    if is_test
+    is_validation_or_test = type_execution ~= 1;
+    is_train_only = type_execution == 1;
+    is_validation_only = type_execution == 2;
+    is_test_only = type_execution == 3;
+    
+    if is_train_only
+        % Train
+        totalGestures = context('RepTraining');
+        user_gestures = context('user_gestures_train');
+        rangeDown = context('rangeDownTrain');
+    elseif is_validation_only
+        % Validation
+        totalGestures = context('RepValidation');
+        user_gestures = context('user_gestures_validation');
+        rangeDown = context('rangeDownValidation');
+    elseif is_test_only
+        % Test
         totalGestures = context('RepTesting');
         rangeDown = context('rangeDownTest');
-        user_gestures = context('user_gestures');
-    else
-        totalGestures = context('RepTraining');
-        rangeDown = context('rangeDownTrain');
-        user_gestures = context('user_gestures');
+        user_gestures = context('user_gestures_test');        
     end
+    
     
     tabulation_mode = context('tabulation_mode');
     offset_user = context('offset_user');
     
     
-    history_episodes = containers.Map();
+    history_episodes = struct();
     shape_history = [1, totalGestures];
     
     history_rewards = zeros(shape_history);
@@ -27,13 +40,12 @@ function history_episodes = customRunEpisodesEMG(q_neural_network, functionGetRe
     history_classification_window_correct = zeros(shape_history);
     history_classification_window_incorrect = zeros(shape_history);
     
-    history_classification_class_correct = zeros(shape_history);
-    history_classification_class_incorrect = zeros(shape_history);
+    history_classification_correct = zeros(shape_history);
+    history_classification_incorrect = zeros(shape_history);
     
-    history_classification_recognition_correct = zeros(shape_history);
-    history_classification_recognition_incorrect = zeros(shape_history);
+    history_recognition_correct = zeros(shape_history);
+    history_recognition_incorrect = zeros(shape_history);
     
-    history_gestures_name = cell(shape_history);
     history_responses = cell(shape_history);
     
     index_id_user = 1;
@@ -53,12 +65,6 @@ function history_episodes = customRunEpisodesEMG(q_neural_network, functionGetRe
         else
             user_gesture_struct = user_gestures{rand_data(gesture_number), 1};
         end
-        
-        
-        
-                
-        
-        
         
         context('gestureName') = string(user_gesture_struct.gestureName);
         
@@ -85,53 +91,54 @@ function history_episodes = customRunEpisodesEMG(q_neural_network, functionGetRe
             episode = offset_user + gesture_counter;
         end
 
-        history_episode = q_neural_network.functionExecuteEpisode(q_neural_network, episode, is_test, functionGetReward, context, verbose_level-1);
+        history_episode = q_neural_network.functionExecuteEpisode(q_neural_network, episode, type_execution, functionGetReward, context, verbose_level-1);
 
-
-
-        history_gestures_name{index_id_user, gesture_counter} = context('gestureName');
         history_rewards(index_id_user, gesture_counter) = history_episode('reward_cummulated');
 
         history_responses{index_id_user, gesture_counter} = history_episode('response');
 
-        update_costs = history_episode('update_costs');
-        history_update_costs{index_id_user, gesture_counter} = update_costs(:);
-
-        history_classification_window_correct(index_id_user, gesture_counter) = history_episode('classification_window_correct');
-        history_classification_window_incorrect(index_id_user, gesture_counter) = history_episode('classification_window_incorrect');
-
-        history_classification_class_correct(index_id_user, gesture_counter) = history_episode('classification_class_correct');
-        history_classification_class_incorrect(index_id_user, gesture_counter) = history_episode('classification_class_incorrect');
-
-        history_classification_recognition_correct(index_id_user, gesture_counter) = history_episode('classification_recognition_correct');
-        history_classification_recognition_incorrect(index_id_user, gesture_counter) = history_episode('classification_recognition_incorrect');
-
-
-        if ~is_test
+        if is_train_only
+            update_costs = history_episode('update_costs');
+            history_update_costs{index_id_user, gesture_counter} = update_costs(:);
             % QNN target strategy, for "stable" learning
             q_neural_network.updateQNeuralNetworkTarget();
         end
+        
+        if is_train_only || is_validation_only
 
+            history_classification_window_correct(index_id_user, gesture_counter) = history_episode('classification_window_correct');
+            history_classification_window_incorrect(index_id_user, gesture_counter) = history_episode('classification_window_incorrect');
+
+            history_classification_correct(index_id_user, gesture_counter) = history_episode('classification_class_correct');
+            history_classification_incorrect(index_id_user, gesture_counter) = history_episode('classification_class_incorrect');
+
+            history_recognition_correct(index_id_user, gesture_counter) = history_episode('classification_recognition_correct');
+            history_recognition_incorrect(index_id_user, gesture_counter) = history_episode('classification_recognition_incorrect');
+
+        end
+            
         gesture_counter = gesture_counter + 1;
 
     end
     
-    history_episodes('history_rewards') = history_rewards;
-    history_episodes('history_update_costs') = history_update_costs;
+    history_episodes.history_rewards = history_rewards;
+    history_episodes.history_responses = history_responses;
     
+    if is_train_only
+        history_episodes.history_update_costs = history_update_costs;
+    end
     
-    history_episodes('history_classification_window_correct') = history_classification_window_correct;
-    history_episodes('history_classification_window_incorrect') = history_classification_window_incorrect;
+    if is_train_only || is_validation_only
     
-    history_episodes('history_classification_class_correct') = history_classification_class_correct;
-    history_episodes('history_classification_class_incorrect') = history_classification_class_incorrect;
-    
-    history_episodes('history_classification_recognition_correct') = history_classification_recognition_correct;
-    history_episodes('history_classification_recognition_incorrect') = history_classification_recognition_incorrect;
-    
-    
-    history_episodes('history_gestures_name') = history_gestures_name;
-    history_episodes('history_responses') = history_responses;
+        history_episodes.history_classification_window_correct = history_classification_window_correct;
+        history_episodes.history_classification_window_incorrect = history_classification_window_incorrect;
+
+        history_episodes.history_classification_correct = history_classification_correct;
+        history_episodes.history_classification_incorrect = history_classification_incorrect;
+
+        history_episodes.history_recognition_correct = history_recognition_correct;
+        history_episodes.history_recognition_incorrect = history_recognition_incorrect;
+    end
     
     
     

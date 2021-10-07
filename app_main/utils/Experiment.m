@@ -92,6 +92,14 @@ classdef Experiment < handle
             
         end
         
+        function [classification_window, classification, recognition] = getEpisodesEMGMetrics(history_episodes, type)
+            
+            classification_window = getMetricsFromCorrectIncorrect(history_episodes.("history_classification_window_correct"), history_episodes.("history_classification_window_incorrect"));
+            classification = getMetricsFromCorrectIncorrect(history_episodes.("history_classification_correct"), history_episodes.("history_classification_incorrect"));
+            recognition = getMetricsFromCorrectIncorrect(history_episodes.("history_recognition_correct"), history_episodes.("history_recognition_incorrect"));
+            
+        end
+        
     end
     
 end
