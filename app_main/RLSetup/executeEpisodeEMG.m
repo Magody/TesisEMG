@@ -201,7 +201,7 @@ function history_episode = executeEpisodeEMG(q_neural_network, episode, is_test,
     try
         r1 = evalRecognition(repInfo, response);
     catch
-        warning('EL vector de predicciones esta compuesto por una misma etiqueta -> Func Eval Recog no funciona');
+        % warning('EL vector de predicciones esta compuesto por una misma etiqueta -> Func Eval Recog no funciona');
         
         r1.recogResult=0;
 
@@ -242,5 +242,8 @@ function history_episode = executeEpisodeEMG(q_neural_network, episode, is_test,
     is_correct_recognition = recognition == 1;
     history_episode('classification_recognition_correct') = is_correct_recognition;
     history_episode('classification_recognition_incorrect') = ~is_correct_recognition;
+    
+    
+    history_episode('response') = response;
     
 end

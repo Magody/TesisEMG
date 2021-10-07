@@ -16,11 +16,11 @@ addpath(genpath('LabEPN'));
 
 %% Init general parameters
 verbose_level = 2;
-RepTraining = 125;
-RepTesting = 50;
+RepTraining = 10;
+RepTesting = 5;
 
 
-list_users = [8]; % [8 200]; 1:306;
+list_users = [1]; % [8 200]; 1:306;
 list_users_test = [1]; % [1 2]; 1:306;
 num_users = length(list_users);
 num_users_test = length(list_users_test);
@@ -36,7 +36,7 @@ environment_options.noGestureDetection = off;
 context('noGestureDetection') = environment_options.noGestureDetection;
 environment_options.rangeValues = 150;
 environment_options.packetEMG = true;
-prepare_environment('/home/magody/programming/MATLAB/tesis/Data/', verbose_level-1, environment_options);
+prepare_environment(environment_options);
 assignin('base','RepTraining',  RepTraining); % initial value
 context('RepTraining') = RepTraining;
 context('RepTesting') = RepTesting;
@@ -54,7 +54,7 @@ context('data_dir') = '/home/magody/programming/MATLAB/tesis/Data/';
 %% Generating orientation (slow section)
 fprintf("Generating orientation...\n");
 assignin('base','packetEMG',     false); 
-Code_0(rangeDown, '/home/magody/programming/MATLAB/tesis/Data/');
+Code_0(rangeDown, '/home/magody/programming/MATLAB/tesis/Data/', true, false);
 orientation      = evalin('base', 'orientation');
 dataPacket = evalin('base','dataPacket');
 fprintf("Orientation generated\n");
@@ -113,7 +113,6 @@ input_dense = prod(sequential_conv_network.shape_output);% if convolutional netw
 sequential_network = Sequential({
     Dense(64, "kaiming", input_dense), ...
     Activation("relu"), ...
-    Dropout(0.3), ...
     Dense(64, "kaiming"), ...
     Activation("relu"), ...
     Dense(6, "xavier"), ...

@@ -34,6 +34,7 @@ function history_episodes = customRunEpisodesEMG(q_neural_network, functionGetRe
     history_classification_recognition_incorrect = zeros(shape_history);
     
     history_gestures_name = cell(shape_history);
+    history_responses = cell(shape_history);
     
     index_id_user = 1;
     
@@ -91,6 +92,7 @@ function history_episodes = customRunEpisodesEMG(q_neural_network, functionGetRe
         history_gestures_name{index_id_user, gesture_counter} = context('gestureName');
         history_rewards(index_id_user, gesture_counter) = history_episode('reward_cummulated');
 
+        history_responses{index_id_user, gesture_counter} = history_episode('response');
 
         update_costs = history_episode('update_costs');
         history_update_costs{index_id_user, gesture_counter} = update_costs(:);
@@ -129,6 +131,8 @@ function history_episodes = customRunEpisodesEMG(q_neural_network, functionGetRe
     
     
     history_episodes('history_gestures_name') = history_gestures_name;
+    history_episodes('history_responses') = history_responses;
+    
     
     
             
