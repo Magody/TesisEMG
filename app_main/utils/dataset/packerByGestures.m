@@ -1,5 +1,11 @@
 function packet_gestures = packerByGestures(gestures, ignore_gesture)
 
+    if ~isfield(gestures{1}, 'gestureName')
+        disp("\nError, the gestures haven't been labeled in gestureName, returning empty");
+        packet_gestures = {};
+        return;
+    end
+
     order_classes = ["noGesture", "fist", "open", "pinch", "waveIn", "waveOut"];
     
     order_separation = ["0", "25", "50", "75", "100", "125"];

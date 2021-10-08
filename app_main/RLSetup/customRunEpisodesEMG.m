@@ -1,6 +1,8 @@
 function history_episodes = customRunEpisodesEMG(q_neural_network, functionGetReward, type_execution, context, verbose_level)
     % each user has their episodes
 
+    t = 1;
+    
     window_size = context('window_size');
     stride = context('stride');
     
@@ -11,21 +13,20 @@ function history_episodes = customRunEpisodesEMG(q_neural_network, functionGetRe
     
     if is_train_only
         % Train
-        totalGestures = context('RepTraining');
+        t = context('global_epoch');
         user_gestures = context('user_gestures_train');
         rangeDown = context('rangeDownTrain');
     elseif is_validation_only
         % Validation
-        totalGestures = context('RepValidation');
         user_gestures = context('user_gestures_validation');
         rangeDown = context('rangeDownValidation');
     elseif is_test_only
         % Test
-        totalGestures = context('RepTesting');
         rangeDown = context('rangeDownTest');
         user_gestures = context('user_gestures_test');        
     end
     
+    totalGestures = length(user_gestures);
     
     tabulation_mode = context('tabulation_mode');
     offset_user = context('offset_user');
@@ -66,8 +67,7 @@ function history_episodes = customRunEpisodesEMG(q_neural_network, functionGetRe
             user_gesture_struct = user_gestures{rand_data(gesture_number), 1};
         end
         
-        context('gestureName') = string(user_gesture_struct.gestureName);
-        
+       
         if is_preprocessed
             key_features = "features_per_window" + "Win" + window_size + "Stride" + stride;
             context('features_per_window') = user_gesture_struct.(key_features);
@@ -77,21 +77,19 @@ function history_episodes = customRunEpisodesEMG(q_neural_network, functionGetRe
             context('emg') = user_gesture_struct.emg;
         end
         
+        if is_train_only || is_validation_only
+            context('gestureName') = string(user_gesture_struct.gestureName);
 
-        if context('gestureName') == "noGesture"
-             context('ground_truth_index') = [0, 0];
-        else
-             context('ground_truth_index') = user_gesture_struct.groundTruthIndex;
+
+            if context('gestureName') == "noGesture"
+                 context('ground_truth_index') = [0, 0];
+            else
+                 context('ground_truth_index') = user_gesture_struct.groundTruthIndex;
+            end
         end
 
-        if tabulation_mode == 1
-            % each user is a world
-            episode = gesture_counter;
-        elseif tabulation_mode == 2
-            episode = offset_user + gesture_counter;
-        end
 
-        history_episode = q_neural_network.functionExecuteEpisode(q_neural_network, episode, type_execution, functionGetReward, context, verbose_level-1);
+        history_episode = q_neural_network.functionExecuteEpisode(q_neural_network, t, type_execution, functionGetReward, context, verbose_level-1);
 
         history_rewards(index_id_user, gesture_counter) = history_episode('reward_cummulated');
 

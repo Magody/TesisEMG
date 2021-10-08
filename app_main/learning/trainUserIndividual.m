@@ -1,4 +1,4 @@
-function [q_neural_network, history_episodes_by_epoch, summary] = trainUserIndividual(params, hyperparams, path_to_framework, path_to_data)
+function [q_neural_network, history_episodes_by_epoch, summary, do_validation] = trainUserIndividual(params, hyperparams, path_to_framework, path_to_data)
     % Train with a user, and validate with the same or another user
     %{
         path_to_framework = "/home/magody/programming/MATLAB/deep_learning_from_scratch/magody_framework";% "C:\Users\Magody\Documents\GitHub\MATLABMagodyFramework\magody_framework"; "/home/magody/programming/MATLAB/deep_learning_from_scratch/magody_framework";
@@ -77,12 +77,22 @@ function [q_neural_network, history_episodes_by_epoch, summary] = trainUserIndiv
     user_real_id = params.list_users(1);
     user_folder = "user"+user_real_id;
     userData = loadUserByNameAndDir(user_folder, path_to_data, false);
-    dataset_part1 = packerByGestures(userData.training, "");
-    dataset_part2 = packerByGestures(userData.testing, "");
+    dataset_part1 = packerByGestures(userData.training, "noGesture");
+    
+    dataset_part2 = {};
+    if params.RepValidation ~= 0
+        dataset_part2 = packerByGestures(userData.testing, "");    
+    end
+    
+    do_validation = ~isempty(dataset_part2) || (params.RepTraining < 150 && (params.RepTraining + params.RepValidation) <= 150);
+    
     dataset_complete = [dataset_part1, dataset_part2];
     
-    context('user_gestures_train') = dataset_complete(1:params.RepTraining);
-    context('user_gestures_validation') = dataset_complete((params.RepTraining+1):(params.RepTraining+params.RepValidation));
+    context('user_gestures_train') = dataset_complete(1:params.RepTraining-25);
+    
+    if do_validation
+        context('user_gestures_validation') = dataset_complete((params.RepTraining+1-25):(params.RepTraining+params.RepValidation-25));
+    end
     
     clear dataset_part1;
     clear dataset_part2;   
@@ -107,7 +117,7 @@ function [q_neural_network, history_episodes_by_epoch, summary] = trainUserIndiv
     nnConfig = NNConfig(hyperparams.inner_epochs, hyperparams.learning_rate, hyperparams.batch_size, hyperparams.loss_type);
     nnConfig.decay_rate_alpha = hyperparams.decay_rate_alpha;
 
-    total_episodes = params.RepTraining * num_users;
+    total_episodes = hyperparams.general_epochs * length(context('user_gestures_train')) * num_users;
 
     qLearningConfig = QLearningConfig(hyperparams.gamma, hyperparams.epsilon, hyperparams.gameReplayStrategy, hyperparams.experience_replay_reserved_space, total_episodes);
 
@@ -119,9 +129,9 @@ function [q_neural_network, history_episodes_by_epoch, summary] = trainUserIndiv
 
     %% Train
 
-
-    fprintf("*****Training with %s, with %d gestures*****\n", user_folder, params.RepTraining);
-
+    if params.verbose_level > 0
+        fprintf("*****Training with %s, with %d gestures*****\n", user_folder, params.RepTraining);
+    end
     history_episodes_by_epoch = cell([hyperparams.general_epochs, 2]);
     summary = cell([hyperparams.general_epochs, 2]);
     t_begin = tic;
@@ -129,29 +139,39 @@ function [q_neural_network, history_episodes_by_epoch, summary] = trainUserIndiv
     for epoch=1:hyperparams.general_epochs
 
         context('offset_user') = 0;
+        context('global_epoch') = epoch;
 
         % Train
         history_episodes_by_epoch{epoch, 1} = q_neural_network.runEpisodes(@getRewardEMG, 1, context, params.verbose_level-1);
-        % validation
-        history_episodes_by_epoch{epoch, 2} = q_neural_network.runEpisodes(@getRewardEMG, 2, context, params.verbose_level-1);
-
+        
 
         [classification_window_train, classification_train, recognition_train] = Experiment.getEpisodesEMGMetrics(history_episodes_by_epoch{epoch, 1});
-        [classification_window_validation, classification_validation, recognition_validation] = Experiment.getEpisodesEMGMetrics(history_episodes_by_epoch{epoch, 2});
-
+        
         summary{epoch, 1} = struct("classification_window_train", classification_window_train, ...
                                    "classification_train", classification_train, ...
                                    "recognition_train", recognition_train);
+                               
+        if do_validation
+            % validation
+            history_episodes_by_epoch{epoch, 2} = q_neural_network.runEpisodes(@getRewardEMG, 2, context, params.verbose_level-1);
 
-        summary{epoch, 2} = struct("classification_window_validation", classification_window_validation, ...
-                                   "classification_validation", classification_validation, ...
-                                   "recognition_validation", recognition_validation);
+            [classification_window_validation, classification_validation, recognition_validation] = Experiment.getEpisodesEMGMetrics(history_episodes_by_epoch{epoch, 2});
+
+            summary{epoch, 2} = struct("classification_window_validation", classification_window_validation, ...
+                                       "classification_validation", classification_validation, ...
+                                       "recognition_validation", recognition_validation);
+        end
 
         if params.verbose_level > 0
             if mod(epoch, print_step) == 0 || epoch == hyperparams.general_epochs
-                fprintf("->Epoch %d | Train accuracy: [%.4f, %.4f, %.4f], Validation accuracy: [%.4f, %.4f, %.4f]\n", epoch, ...
-                    classification_window_train.accuracy, classification_train.accuracy, recognition_train.accuracy, ...
-                    classification_window_validation.accuracy, classification_validation.accuracy, recognition_validation.accuracy);
+                if do_validation
+                    fprintf("->Epoch %d | Train accuracy: [%.4f, %.4f, %.4f], Validation accuracy: [%.4f, %.4f, %.4f]\n", epoch, ...
+                        classification_window_train.accuracy, classification_train.accuracy, recognition_train.accuracy, ...
+                        classification_window_validation.accuracy, classification_validation.accuracy, recognition_validation.accuracy);
+                else
+                    fprintf("->Epoch %d | Train accuracy: [%.4f, %.4f, %.4f]\n", epoch, ...
+                        classification_window_train.accuracy, classification_train.accuracy, recognition_train.accuracy);
+                end
             end
         end
         

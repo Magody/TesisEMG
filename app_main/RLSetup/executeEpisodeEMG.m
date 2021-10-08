@@ -1,13 +1,16 @@
-function history_episode = executeEpisodeEMG(q_neural_network, episode, type_execution, functionGetReward, context, verbose_level) 
+function history_episode = executeEpisodeEMG(q_neural_network, t, type_execution, functionGetReward, context, verbose_level) 
+    
     
     is_validation_or_test = type_execution ~= 1;
     is_train_only = type_execution == 1;
     is_validation_only = type_execution == 2;
-    is_test_only = type_execution == 3;
     
-    classes_name_to_num = containers.Map(["waveOut", "waveIn", "fist", "open", "pinch", "noGesture"], {1, 2, 3, 4, 5, 6});
+    
+    if is_train_only
+        q_neural_network.episode = q_neural_network.episode + 1;
+    end
+    
     classes_num_to_name = containers.Map([1, 2, 3, 4, 5, 6], ["waveOut", "waveIn", "fist", "open", "pinch", "noGesture"]);
-    
     
     
     window_size = context('window_size');
@@ -21,10 +24,8 @@ function history_episode = executeEpisodeEMG(q_neural_network, episode, type_exe
     if is_train_only || is_validation_only
         gestureName = context('gestureName');
         ground_truth_index = context('ground_truth_index');
-        real_class = classes_name_to_num(string(gestureName));
     else
         gestureName = "unknown";
-        real_class = -1;
     end
     
     
@@ -70,13 +71,13 @@ function history_episode = executeEpisodeEMG(q_neural_network, episode, type_exe
     step_t = 0;
     
     
-    etiquetas_labels_predichas_vector = strings([num_windows-1, 1]);
+    expected_num_windows = getNumberWindows(999, window_size, stride, false);
     
-    etiquetas_labels_predichas_vector_simplif=strings();
-    ProcessingTimes_vector=[];
-    TimePoints_vector=[];
     
-    n1=0;
+    etiquetas_labels_predichas_vector = strings([expected_num_windows-1, 1]);
+    ProcessingTimes_vector=zeros([1, expected_num_windows-1]);
+    TimePoints_vector=zeros([1, expected_num_windows-1]);
+    
     
     tic;
     index_state_begin = 1;
@@ -101,7 +102,7 @@ function history_episode = executeEpisodeEMG(q_neural_network, episode, type_exe
         if is_train_only || is_validation_only
             context('real_action') = gt_gestures_labels_num(window+1);
             % context is modified by reference
-            [reward, new_state, finish] = functionGetReward(state, action, context);
+            [reward, new_state, ~] = functionGetReward(state, action, context);
             % in this case, new_state is useless
             finish = window == num_windows-1;
 
@@ -123,7 +124,7 @@ function history_episode = executeEpisodeEMG(q_neural_network, episode, type_exe
             
             if mod(step_t, t_for_learning) == 0
                 % update in each step could be very brute
-                history_learning = q_neural_network.learnFromExperienceReplay(episode, verbose_level);
+                history_learning = q_neural_network.learnFromExperienceReplay(t, verbose_level);
                 if history_learning('learned')
                     update_counter = update_counter + 1;
                     update_costs(1, update_counter) = history_learning('mean_cost');
@@ -134,44 +135,29 @@ function history_episode = executeEpisodeEMG(q_neural_network, episode, type_exe
 
         reward_cummulated = reward_cummulated + reward;
 
-        index_state_begin = index_state_begin + stride;
-        index_state_end = index_state_end + stride;
         
         % state = new_state;
         
-        %Acondicionar vectores - si el signo anterior no es igual al signo acual entocnes mido tiempo
-        if window>1 && window~=window-1 && ...   %window_n~=maxWindowsAllowed
-                etiquetas_labels_predichas_vector(window,1) ~= etiquetas_labels_predichas_vector(window-1,1)
-
-            n1=n1+1;
-            ProcessingTimes_vector(1,n1) = toc;  %mido tiempo transcurrido desde ultimo cambio de gesto
-            tic;
-
-            %obtengo solo etiqueta que se ha venido repetiendo hasta instante window_n-1
-            etiquetas_labels_predichas_vector_simplif(1,n1)=etiquetas_labels_predichas_vector(window-1,1);
-
-            %obtengo nuevo dato para vector de tiempos
-            TimePoints_vector(1,n1)=stride*(window-1)+window_size;           %necesito dato de stride y tamaño de ventana de Victor
-
-        elseif window== num_windows-1 %==maxWindowsAllowed    % si proceso la ultima ventana de la muestra de señal EMG
-
-            %disp('final window')
-
-            n1=n1+1;
-            ProcessingTimes_vector(1,n1) = toc;  %mido tiempo transcurrido desde ultimo cambio de gesto
-            tic;
-
-            %obtengo solo etiqueta que no se ha repetido hasta instante window_n-1
-            etiquetas_labels_predichas_vector_simplif(1,n1)=etiquetas_labels_predichas_vector(window,1);
-
-            %obtengo dato final para vector de tiempos
-            TimePoints_vector(1,n1)=  stride*(window-1)+window_size;
-
-        end
-
+        ProcessingTimes_vector(1,window) = toc;  %mido tiempo transcurrido desde ultimo cambio de gesto
+        TimePoints_vector(1,window)=index_state_end;
+        tic;
+        index_state_begin = index_state_begin + stride;
+        index_state_end = index_state_end + stride;
+        
     end
     
-    
+    % fill to standarize dimension
+    for window=1:expected_num_windows-1
+        if etiquetas_labels_predichas_vector(window) == ""
+           etiquetas_labels_predichas_vector(window) = "noGesture"; 
+        end
+        if ProcessingTimes_vector(window) == 0
+           ProcessingTimes_vector(window) = mean(ProcessingTimes_vector(1:num_windows-1)); 
+        end
+        if TimePoints_vector(window) == 0
+           TimePoints_vector(window) = TimePoints_vector(window-1) + stride; 
+        end
+    end
     
     % class_result_num = mode(predictions);
     etiquetas_labels_predichas_vector_without_NoGesture = strings();
@@ -183,33 +169,50 @@ function history_episode = executeEpisodeEMG(q_neural_network, episode, type_exe
         end
     end
     
-    if is_train_only || is_validation_only
-        if noGestureDetection || string(gestureName) == "noGesture"
-            class_result = mode(categorical(etiquetas_labels_predichas_vector));
-        else
-            class_result = mode(categorical(etiquetas_labels_predichas_vector_without_NoGesture));
+    
+    if length(etiquetas_labels_predichas_vector_without_NoGesture) == 1 && etiquetas_labels_predichas_vector_without_NoGesture{1} == ""
+        % All labels were noGesture
+        class_result = categorical("noGesture");
+    else
+        class_result = mode(categorical(etiquetas_labels_predichas_vector_without_NoGesture));
+        
+        for index_label=1:length(etiquetas_labels_predichas_vector)
+            label = etiquetas_labels_predichas_vector(index_label);
+            if label ~= "noGesture" && label ~= class_result
+                etiquetas_labels_predichas_vector(index_label) = string(class_result);
+            end
         end
-    elseif is_test_only
-        class_result = mode(categorical(etiquetas_labels_predichas_vector));
+        
+        for index_label=1:length(etiquetas_labels_predichas_vector)
+            % process batchs
+            label = etiquetas_labels_predichas_vector(index_label);
+            
+            if label == class_result
+                continue;
+            end
+            label_left = label;
+            label_right = label;
+            if index_label-1 > 0
+                label_left = etiquetas_labels_predichas_vector(index_label-1);
+            end
+            if index_label+1 <= length(etiquetas_labels_predichas_vector)
+                label_right = etiquetas_labels_predichas_vector(index_label+1);
+            end
+            
+            if label_left == label_right && (label_left ~= label || label_right ~= label)
+                etiquetas_labels_predichas_vector(index_label) = label_left;
+            end
+        end
+        
+        
     end
-
-    %---  POST - Processing: elimino etiquetas espuria
-    post_processing_result_vector_lables=etiquetas_labels_predichas_vector_simplif;
-    dim_vect=size(etiquetas_labels_predichas_vector_simplif);
-    for i=1:dim_vect(1,2)
-        if etiquetas_labels_predichas_vector_simplif(1,i) ~= class_result && etiquetas_labels_predichas_vector_simplif(1,i) ~= "noGesture"
-            post_processing_result_vector_lables(1,i)=class_result;
-        else
-        end  
-    end
-    response.vectorOfLabels = categorical(post_processing_result_vector_lables);
-    if length(response.vectorOfLabels) == 1
-        response.vectorOfLabels = etiquetas_labels_predichas_vector;
-    end
-    response.vectorOfTimePoints = TimePoints_vector; % OK -----  [40 200 400 600 800 999];
-    % tiempo de procesamiento
-    response.vectorOfProcessingTimes = ProcessingTimes_vector; % OK -----[0.1 0.1 0.1 0.1 0.1 0.1]; % ProcessingTimes_vector'; % [0.1 0.1 0.1 0.1 0.1 0.1]; % 1xw double                                    %CAMBIAR
-    response.class =  categorical(class_result); % OK ----- categorical({'waveIn'});                %aqui tengo que usar la moda probablemente           %CAMBIAR
+        
+   
+    
+    response.vectorOfLabels = categorical(etiquetas_labels_predichas_vector');
+    response.vectorOfTimePoints = TimePoints_vector;
+    response.vectorOfProcessingTimes = ProcessingTimes_vector;
+    response.class =  categorical(class_result);
 
  
     history_episode('reward_cummulated') = reward_cummulated;
@@ -223,11 +226,12 @@ function history_episode = executeEpisodeEMG(q_neural_network, episode, type_exe
         repInfo.groundTruth = ground_truth_gt;
         try
             r1 = evalRecognition(repInfo, response);
-            if ~isnan(r1.overlappingFactor)
+            if isnan(r1.overlappingFactor)
+                % disp("overlapping nan");
                 disp("");
             end
-        catch
-            % warning('EL vector de predicciones esta compuesto por una misma etiqueta -> Func Eval Recog no funciona');
+        catch ME
+            disp('Error al aplicar reconocimiento');
 
             r1.recogResult=0;
 

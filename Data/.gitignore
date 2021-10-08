@@ -1,7 +1,8 @@
 Specific/user**
+SpecificTest/user**
 TestingData/user**
 preprocessing/user**
-preprocessing_test/user**
+preprocessingTest/user**
 !Specific/user1
 !Specific/user8
 !Specific/user208
@@ -11,6 +12,9 @@ preprocessing_test/user**
 !preprocessing/user1
 !preprocessing/user8
 !preprocessing/user208
-!preprocessing_test/user1
-!preprocessing_test/user8
-!preprocessing_test/user208
+!preprocessingTest/user1
+!preprocessingTest/user8
+!preprocessingTest/user208
+!SpecificTest/user1
+!SpecificTest/user8
+!SpecificTest/user208
