@@ -1,0 +1,92 @@
+clc;
+clear all;
+close all;
+addpath(genpath('lib/Myo'));
+
+%% Parameters
+global deviceType
+deviceType = DeviceName.myo;
+
+%% Start connection
+disp('CONNECTING, please, wait...');
+
+if deviceType == DeviceName.myo
+
+    [myoObject, isConnectedMyo] = connectMyo("fake");
+    % [myoObject, isConnectedMyo] = connectMyo();
+
+    if isConnectedMyo
+        disp('Device connected');
+    else
+        disp('Could not connect Myo with Matlab');
+    end
+else
+    fprintf("Device not supported\n");
+end
+
+
+
+%%
+
+% Clean up: reset all
+if deviceType == DeviceName.myo
+    myoObject.myoData.stopStreaming();
+    myoObject.myoData.clearLogs();
+    myoObject.myoData.startStreaming();
+end
+
+h = animatedline;
+
+
+%{
+Get data
+sample = struct('emg', [], 'quaternions', [], 'gyro', [],'accel', [], ...
+    'gestureDevicePredicted', []);
+
+
+if deviceType == DeviceName.myo
+    
+    sample.emg = myoObject.myoData.emg_log;
+    sample.gestureDevicePredicted = myoObject.myoData.pose_log;
+    
+    if isempty(sample.emg)
+        errorInData = true;
+        errorType = 'noData';
+    end
+
+    if any(sample.gestureDevicePredicted == 65535)
+        errorInData = true;
+        errorType = '65535';
+    end
+
+    sample.quaternions = myoObject.myoData.quat_log();% w,x,y,z
+    sample.gyro = myoObject.myoData.gyro_log();
+    sample.accel =  myoObject.myoData.accel_log();
+        
+else
+    % not supported yet
+    fprintf("Device not supported\n");
+end
+%}
+
+
+%%
+t = timer('Name', 'rec', 'TimerFcn', @plotAnimatedEMG);
+             
+h = animatedline;
+axis([0 4*pi -1 1])
+x = linspace(0,4*pi,10000);
+y = sin(x);
+
+for k = 1:length(x)
+    addpoints(h,x(k),y(k));
+    drawnow limitrate
+end
+drawnow
+
+%% Disconnect
+% We can stop streaming
+% myoObject.myoData.stopStreaming()
+
+% Or disconnect full, erasing some other variables
+disconnectMyo(myoObject)
