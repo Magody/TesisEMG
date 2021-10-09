@@ -38,13 +38,13 @@ matlab -nosplash -noFigureWindows "try; cd('C:\Git\QNN_emg\CodigoFuente\QNN_wind
  :: matlab -nosplash -noFigureWindows -r 
 matlab -nosplash -noFigureWindows -r %instruction%
 
-matlab -nosplash -noFigureWindows -batch "try; cd('C:\Users\Magody\Documents\GitHub\TesisEMG\app_main'); preprocessFeatures(25, 76, 300, 40, false); quit; catch ME; disp(ME); end;"
+matlab -nosplash -noFigureWindows -batch "try; cd('C:\Users\Magody\Documents\GitHub\TesisEMG\app_main'); preprocessFeatures(1, 76, 300, 40, false); quit; catch ME; disp(ME); end;"
 
-matlab -nosplash -noFigureWindows -batch "try; cd('C:\Users\Magody\Documents\GitHub\TesisEMG\app_main'); preprocessFeatures(100, 153, 300, 40, false); quit; catch ME; disp(ME); end;"
+matlab -nosplash -noFigureWindows -batch "try; cd('C:\Users\Magody\Documents\GitHub\TesisEMG\app_main'); preprocessFeatures(77, 153, 300, 40, false); quit; catch ME; disp(ME); end;"
 
-matlab -nosplash -noFigureWindows -batch "try; cd('C:\Users\Magody\Documents\GitHub\TesisEMG\app_main'); preprocessFeatures(177, 230, 300, 40, false); quit; catch ME; disp(ME); end;"
+matlab -nosplash -noFigureWindows -batch "try; cd('C:\Users\Magody\Documents\GitHub\TesisEMG\app_main'); preprocessFeatures(154, 230, 300, 40, false); quit; catch ME; disp(ME); end;"
 
-matlab -nosplash -noFigureWindows -batch "try; cd('C:\Users\Magody\Documents\GitHub\TesisEMG\app_main'); preprocessFeatures(254, 306, 300, 40, false); quit; catch ME; disp(ME); end;"
+matlab -nosplash -noFigureWindows -batch "try; cd('C:\Users\Magody\Documents\GitHub\TesisEMG\app_main'); preprocessFeatures(231, 306, 300, 40, false); quit; catch ME; disp(ME); end;"
 
 
 matlab -nosplash -noFigureWindows -batch "try; cd('C:\Users\Magody\Documents\GitHub\TesisEMG\app_main'); execute_experiments_per_user('huge_individual', 'C:\Users\Magody\Documents\GitHub\MATLABMagodyFramework', 'C:\Users\Magody\Documents\GitHub\TesisEMG\Data\', 2, @executeEpisodeEMG, false, 0, false, [32]); quit; catch ME; disp(ME); end;"
