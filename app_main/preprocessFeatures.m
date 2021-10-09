@@ -62,11 +62,18 @@ function preprocessFeatures(user_begin, user_end, window_size, stride, is_legacy
         user_folder = "user"+list_users(index_id_user);
         fprintf("User %s\n", user_folder);
 
-        user_full_dir = dit_data_out + user_folder + "/";
-        % [~, ~, ~] = mkdir(user_full_dir);
+        if is_legacy
+            user_full_dir = dir_data + "Specific/";
+            user_full_dir_out = dit_data_out + user_folder + "/";
+        else
+            user_full_dir = dit_data_out;
+            user_full_dir_out = dit_data_out + user_folder + "/";
+        end
+        
+        [~, ~, ~] = mkdir(user_full_dir_out);
 
 
-        userData = loadUserByNameAndDir(user_folder, char(dit_data_out), is_legacy);
+        userData = loadUserByNameAndDir(user_folder, char(user_full_dir), is_legacy);
         index_in_packet = getUserIndexInPacket(dataPacket, user_folder);
         assignin('base', 'userIndex', index_in_packet);
         assignin('base','index_user', index_in_packet-2);
@@ -153,7 +160,7 @@ function preprocessFeatures(user_begin, user_end, window_size, stride, is_legacy
         userInfo = userData.userInfo;
         sync = userData.sync;
 
-        model_name = user_full_dir + "userData" + ".mat";
+        model_name = user_full_dir_out + "userData" + ".mat";
         save(model_name, "userInfo", "sync", "training", "testing");
 
     end
