@@ -108,9 +108,9 @@ function preprocessFeatures(user_begin, user_end, window_size, stride, is_legacy
 
             for window=1:num_windows
 
-                [~,~,Features_GT,~,~, ~, gestureName, ~, ~] = ...
+                [~,~,Features_GT,~,~, ~, ~, ~, ~] = ...
                     Code_1(orientation, dataPacketSize, RepTraining, verbose_level-1);
-                % Features_GT.Properties.RowNames = {char(gestureName)};
+                
                 features_per_window(window, :) = table2array(Features_GT);
             end
 

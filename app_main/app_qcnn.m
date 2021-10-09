@@ -15,12 +15,12 @@ addpath('RLSetup');
 addpath(genpath('LabEPN'));
 
 %% Init general parameters
-verbose_level = 10;
-RepTraining = 20;
-RepTesting = 15;
+verbose_level = 2;
+RepTraining = 10;
+RepTesting = 5;
 
 
-list_users = [8]; % [8 200]; 1:306;
+list_users = [1]; % [8 200]; 1:306;
 list_users_test = [1]; % [1 2]; 1:306;
 num_users = length(list_users);
 num_users_test = length(list_users_test);
@@ -36,7 +36,7 @@ environment_options.noGestureDetection = off;
 context('noGestureDetection') = environment_options.noGestureDetection;
 environment_options.rangeValues = 150;
 environment_options.packetEMG = true;
-prepare_environment('/home/magody/programming/MATLAB/tesis/Data/', verbose_level-1, environment_options);
+prepare_environment(environment_options);
 assignin('base','RepTraining',  RepTraining); % initial value
 context('RepTraining') = RepTraining;
 context('RepTesting') = RepTesting;
@@ -54,7 +54,7 @@ context('data_dir') = '/home/magody/programming/MATLAB/tesis/Data/';
 %% Generating orientation (slow section)
 fprintf("Generating orientation...\n");
 assignin('base','packetEMG',     false); 
-Code_0(rangeDown, '/home/magody/programming/MATLAB/tesis/Data/');
+Code_0(rangeDown, '/home/magody/programming/MATLAB/tesis/Data/', true, false);
 orientation      = evalin('base', 'orientation');
 dataPacket = evalin('base','dataPacket');
 fprintf("Orientation generated\n");
@@ -62,7 +62,7 @@ fprintf("Orientation generated\n");
 %% Init Hyper parameters and models
 fprintf("Setting hyper parameters and models\n");
 generate_rng(seed_rng);
-context('interval_for_learning') = 3;  % in each episode will learn this n times more or less
+context('interval_for_learning') = 10;  % in each episode will learn this n times more or less
 window_size = 300;
 stride = 30;
 
@@ -80,14 +80,14 @@ shape_input = [1, window_size, 8];
 
 total_episodes = RepTraining * num_users;
 total_episodes_test = RepTesting * num_users_test;
-epochs = 1; % epochs inside each NN
-learning_rate = 3e-4;
+epochs = 5; % epochs inside each NN
+learning_rate = 0.001;
 batch_size = 128;
 gamma = 0.1;
 epsilon = 1;
 decay_rate_alpha = 0.1;
 gameReplayStrategy = 1;
-experience_replay_reserved_space = 500;
+experience_replay_reserved_space = 100;
 loss_type = "mse";
 rewards = struct('correct', 1, 'incorrect', -1);
 
@@ -113,10 +113,8 @@ input_dense = prod(sequential_conv_network.shape_output);% if convolutional netw
 sequential_network = Sequential({
     Dense(64, "kaiming", input_dense), ...
     Activation("relu"), ...
-    Dropout(0.3), ...
     Dense(64, "kaiming"), ...
     Activation("relu"), ...
-    Dropout(0.2), ...
     Dense(6, "xavier"), ...
 });
 
@@ -307,9 +305,8 @@ options('include3D') = false;
 options('save') = false;
 
 options('dir') = 'Experiments/debug/';
-options('algorithms') =  [ ...
+options('algorithms') =  [ .....
     struct('distance', 'euclidean','plot', struct('title', 'Euclidean')), ...
-    % struct('distance', 'chebychev','plot', struct('title', 'Chebychev')), ...
 ];
 
 history_tsne = generateTSNE(features_matrix, classes, options, verbose_level-1);

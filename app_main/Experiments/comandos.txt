@@ -1,0 +1,63 @@
+
+key_features = "features" + "Win" + window_size + "Stride" + stride
+
+gesture_struct.() = features_per_window;
+        
+		
+		
+		User user1
+User user2
+User user3
+User user4
+User user5
+User user6
+User user7
+User user8
+User user9
+User user10
+User user11
+
+User user154
+User user155
+User user156
+User user157
+User user158
+User user159
+User user160
+User user161
+User user162
+User user163
+User user164
+User user165
+
+
+matlab -nosplash -noFigureWindows "try; cd('C:\Git\QNN_emg\CodigoFuente\QNN_wind-stride\%execute_from_folder%'); QNN_train_emg_Exp_Replay_SxWx(%inicio%, 27, 32, true, true, [200 250], [20 30 40 50]); quit; catch ME; disp(ME); end;"
+
+-nosplash -noFigureWindows
+ -batch -r interactively
+ :: matlab -nosplash -noFigureWindows -r 
+matlab -nosplash -noFigureWindows -r %instruction%
+
+matlab -nosplash -noFigureWindows -batch "try; cd('C:\Users\Magody\Documents\GitHub\TesisEMG\app_main'); preprocessFeatures(1, 76, 300, 40, false); quit; catch ME; disp(ME); end;"
+
+matlab -nosplash -noFigureWindows -batch "try; cd('C:\Users\Magody\Documents\GitHub\TesisEMG\app_main'); preprocessFeatures(77, 153, 300, 40, false); quit; catch ME; disp(ME); end;"
+
+matlab -nosplash -noFigureWindows -batch "try; cd('C:\Users\Magody\Documents\GitHub\TesisEMG\app_main'); preprocessFeatures(154, 230, 300, 40, false); quit; catch ME; disp(ME); end;"
+
+matlab -nosplash -noFigureWindows -batch "try; cd('C:\Users\Magody\Documents\GitHub\TesisEMG\app_main'); preprocessFeatures(231, 306, 300, 40, false); quit; catch ME; disp(ME); end;"
+
+
+matlab -nosplash -noFigureWindows -batch "try; cd('C:\Users\Magody\Documents\GitHub\TesisEMG\app_main'); execute_experiments_per_user('huge_individual', 'C:\Users\Magody\Documents\GitHub\MATLABMagodyFramework', 'C:\Users\Magody\Documents\GitHub\TesisEMG\Data\', 2, @executeEpisodeEMG, false, 0, false, [32]); quit; catch ME; disp(ME); end;"
+
+matlab -nosplash -noFigureWindows -batch "try; cd('C:\Users\Magody\Documents\GitHub\TesisEMG\app_main'); execute_experiments_merge_user('data2', 'C:\Users\Magody\Documents\GitHub\MATLABMagodyFramework', 'C:\Users\Magody\Documents\GitHub\TesisEMG\Data\', 2, @executeEpisodeEMG, false, 0, false, [33]); quit; catch ME; disp(ME); end;"
+
+matlab -nosplash -noFigureWindows -batch "try; cd('C:\Users\Magody\Documents\GitHub\TesisEMG\app_main'); execute_experiments_per_user('data2', 'C:\Users\Magody\Documents\GitHub\MATLABMagodyFramework', 'C:\Users\Magody\Documents\GitHub\TesisEMG\Data\', 2, @executeEpisodeEMG, false, 0, false, [34]); quit; catch ME; disp(ME); end;"
+
+matlab -nosplash -noFigureWindows -batch "try; cd('C:\Users\Magody\Documents\GitHub\TesisEMG\app_main'); execute_experiments_merge_user('data2', 'C:\Users\Magody\Documents\GitHub\MATLABMagodyFramework', 'C:\Users\Magody\Documents\GitHub\TesisEMG\Data\', 2, @executeEpisodeEMG, false, 0, false, [34]); quit; catch ME; disp(ME); end;"
+
+
+exp 5 y 6 mejores
+9 y 10
+
+el 29 fue el mejor
+0,71	0,62	58	9,88
