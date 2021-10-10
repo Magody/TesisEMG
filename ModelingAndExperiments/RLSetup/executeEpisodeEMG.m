@@ -10,9 +10,9 @@ function history_episode = executeEpisodeEMG(q_neural_network, t, type_execution
         q_neural_network.episode = q_neural_network.episode + 1;
     end
     
-    classes_num_to_name = containers.Map([1, 2, 3, 4, 5, 6], ["waveOut", "waveIn", "fist", "open", "pinch", "noGesture"]);
     
     
+    classes_num_to_name = context('classes_num_to_name');
     window_size = context('window_size');
     stride = context('stride');
     
@@ -55,7 +55,7 @@ function history_episode = executeEpisodeEMG(q_neural_network, t, type_execution
         end
 
         gt_gestures_labels = mapGroundTruthToLabelsWithPts(gt_gestures_pts, ground_truth_index, gestureName, 0.2);
-        gt_gestures_labels_num = mapGestureLabelsToNumbers(num_windows, gt_gestures_labels);
+        gt_gestures_labels_num = mapGestureLabelsToNumbers(num_windows, gt_gestures_labels, context('classes_name_to_num'));
         
     end
     

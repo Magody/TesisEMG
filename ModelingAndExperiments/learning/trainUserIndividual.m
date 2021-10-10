@@ -1,4 +1,6 @@
-function [q_neural_network, history_episodes_by_epoch, summary, do_validation] = trainUserIndividual(params, hyperparams, path_to_framework, path_to_data)
+function [q_neural_network, history_episodes_by_epoch, summary, do_validation] = ...
+            trainUserIndividual(params, hyperparams, ...
+            path_to_framework, path_to_data, context_initial)
     % Train with a user, and validate with the same or another user
     %{
         path_to_framework = "/home/magody/programming/MATLAB/deep_learning_from_scratch/magody_framework";% "C:\Users\Magody\Documents\GitHub\MATLABMagodyFramework\magody_framework"; "/home/magody/programming/MATLAB/deep_learning_from_scratch/magody_framework";
@@ -57,7 +59,9 @@ function [q_neural_network, history_episodes_by_epoch, summary, do_validation] =
     addpath(genpath('RLSetup'));
 
     %% Init general parameters
-    context = containers.Map();    
+    context = context_initial;
+    
+    
     num_users = length(params.list_users);
     num_users_validation = length(params.list_users_validation);
     context('num_users') = num_users;
@@ -77,11 +81,11 @@ function [q_neural_network, history_episodes_by_epoch, summary, do_validation] =
     user_real_id = params.list_users(1);
     user_folder = "user"+user_real_id;
     userData = loadUserByNameAndDir(user_folder, path_to_data, false);
-    dataset_part1 = packerByGestures(userData.training, "noGesture");
+    dataset_part1 = packerByGestures(userData.training, params.ignoreGestures);
     
     dataset_part2 = {};
     if params.RepValidation ~= 0
-        dataset_part2 = packerByGestures(userData.testing, "");    
+        dataset_part2 = packerByGestures(userData.testing, params.ignoreGestures);    
     end
     
     do_validation = ~isempty(dataset_part2) || (params.RepTraining < 150 && (params.RepTraining + params.RepValidation) <= 150);
@@ -183,8 +187,15 @@ function [q_neural_network, history_episodes_by_epoch, summary, do_validation] =
 
     %% save model
     
+    classes_num_to_name = context('classes_num_to_name');
+    classes_name_to_num = context('classes_name_to_num');
+
     
-    save(params.qnn_model_dir_name, "q_neural_network", "history_episodes_by_epoch", "summary");
+    save(params.qnn_model_dir_name, "q_neural_network", ...
+                                    "history_episodes_by_epoch", ...
+                                    "summary", ...
+                                    "classes_num_to_name", ...
+                                    "classes_name_to_num");
 
     
 

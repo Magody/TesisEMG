@@ -1,4 +1,4 @@
-function packet_gestures = packerByGestures(gestures, ignore_gesture)
+function packet_gestures = packerByGestures(gestures, ignore_gestures)
 
     if ~isfield(gestures{1}, 'gestureName')
         disp("\nError, the gestures haven't been labeled in gestureName, returning empty");
@@ -32,13 +32,14 @@ function packet_gestures = packerByGestures(gestures, ignore_gesture)
     
 
     if nargin == 1
-       ignore_gesture = ""; 
+       ignore_gestures = []; 
     end
 
     len_gestures = length(gestures);
     
-    if ignore_gesture ~= ""
-        len_gestures = len_gestures - 25;
+    
+    if ~isempty(ignore_gestures)
+        len_gestures = len_gestures - (25 * length(ignore_gestures));
     end
     packet_gestures = cell([1, len_gestures]);
         
@@ -50,8 +51,10 @@ function packet_gestures = packerByGestures(gestures, ignore_gesture)
             actual_separation_num = str2double(actual_separation_string);
             
             actual_gesture = separation_to_class(actual_separation_string);
-            if actual_gesture ~= ignore_gesture
-                % disp(gestures{x+actual_separation_num}.gestureName);
+            
+            
+            if searchStringInArray(ignore_gestures, actual_gesture) == -1
+                % if not found in ignores, add
                 packet_gestures(index_packet) = gestures(x+actual_separation_num);
                 index_packet = index_packet + 1;
             end
