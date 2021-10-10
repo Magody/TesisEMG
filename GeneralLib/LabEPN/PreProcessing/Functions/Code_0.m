@@ -1,5 +1,6 @@
 function [] = Code_0(emgRepetition, dir_data, is_legacy, use_dir_full)
 
+dir_data = char(dir_data);
 if nargin == 2
     is_legacy = true;
 end

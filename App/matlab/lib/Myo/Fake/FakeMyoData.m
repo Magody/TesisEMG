@@ -10,13 +10,20 @@ classdef FakeMyoData < handle
     end
 
     properties(Access=private)
-        timerEmg
-        timerPose
-        timerRot
+        timerEmg;
+        timerPose;
+        timerRot;
+        mock_gestures;
+        mock_gestures_length;
+        inter_counter = 0;
     end
 
     methods
         function myoData = FakeMyoData()
+            
+            userData = load('userData1ForFakeMyo');
+            myoData.mock_gestures = userData.training(70);  % 100 in user1Test is pinch
+            myoData.mock_gestures_length = length(myoData.mock_gestures);
             % Myo works in 200Hz = 5ms, 10Hz in this program and
             % environment produces about 1000+ points
             period = 0.1;
@@ -50,7 +57,14 @@ classdef FakeMyoData < handle
         end
 
         function updateEMG(myoData)
-            myoData.emg_log = [ myoData.emg_log; rand(50, 8) ];
+            myoData.inter_counter = myoData.inter_counter + 1;
+            index_gesture = mod(myoData.inter_counter, myoData.mock_gestures_length);
+            if index_gesture == 0
+               index_gesture =  myoData.mock_gestures_length;
+            end
+            
+            % always the same emg for quick test
+            myoData.emg_log = myoData.mock_gestures{index_gesture}.emg; % [ myoData.emg_log; rand(50, 8) ];
         end
 
         function updatePose(myoData)

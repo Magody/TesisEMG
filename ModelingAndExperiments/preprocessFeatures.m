@@ -1,10 +1,9 @@
-function preprocessFeatures(user_begin, user_end, window_size, stride, is_legacy)
+function preprocessFeatures(user_begin, user_end, window_size, stride, is_legacy, path_root)
 
     seed_rng = 44;
     %% Libs
 
-    addpath(genpath('LabEPN'));
-    addpath(genpath('utils'));
+    addpath(genpath(path_root + "GeneralLib/LabEPN"));
 
     %% Parameters
     fprintf("Parameters config\n");
@@ -15,10 +14,10 @@ function preprocessFeatures(user_begin, user_end, window_size, stride, is_legacy
     num_users = length(list_users);
     rangeDown = 1;
 	if is_legacy
-		dir_data = 'C:\Users\Magody\Documents\GitHub\TesisEMG\Data\'; % '/home/magody/programming/MATLAB/tesis/Data/';
-		dit_data_out = dir_data + "preprocessing" + "/";
+		dir_data = path_root + "Data/"; 
+		dit_data_out = dir_data + "preprocessing/";
 	else
-		dir_data = 'C:\Users\Magody\Documents\GitHub\TesisEMG\Data\preprocessing\';
+		dir_data = path_root + "Data/preprocessing/";
 		dit_data_out = dir_data;
 	end
     
@@ -36,7 +35,7 @@ function preprocessFeatures(user_begin, user_end, window_size, stride, is_legacy
     environment_options.noGestureDetection = on;
     environment_options.rangeValues = 300;
     environment_options.packetEMG = false;
-    prepare_environment(dir_data, verbose_level-1, environment_options);
+    prepare_environment(environment_options);
     if is_legacy
          Code_0(rangeDown, dir_data, is_legacy, false);
     else

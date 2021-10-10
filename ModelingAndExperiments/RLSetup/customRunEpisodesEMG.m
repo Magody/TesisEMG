@@ -28,8 +28,8 @@ function history_episodes = customRunEpisodesEMG(q_neural_network, functionGetRe
     
     totalGestures = length(user_gestures);
     
-    tabulation_mode = context('tabulation_mode');
-    offset_user = context('offset_user');
+    % tabulation_mode = context('tabulation_mode');
+    % offset_user = context('offset_user');
     
     
     history_episodes = struct();

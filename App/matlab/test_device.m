@@ -1,11 +1,17 @@
 clc;
 clear all;
 close all;
-addpath(genpath('lib/Myo'));
-addpath('lib/TimersHandle');
-addpath('utils/plot');
-addpath('models/device');
-addpath('media/UI');
+
+global path_root;
+path_root = "/home/magody/programming/MATLAB/tesis/";
+
+addpath(genpath(path_root + "App/matlab/lib/Myo"));
+addpath(path_root + "App/matlab/lib/TimersHandle");
+addpath(genpath(path_root + "App/matlab/utils/timers"));
+addpath(path_root + "App/matlab/models/device");
+addpath(path_root + "App/matlab/media/UI");
+addpath(genpath("/home/magody/programming/MATLAB/deep_learning_from_scratch/magody_framework"));
+
 
 %% Parameters
 global deviceType myoObject
@@ -28,9 +34,64 @@ else
     fprintf("Device not supported\n");
 end
 
+%% Read sensor and get features
+if deviceType == DeviceName.myo
+    myoObject.myoData.stopStreaming();
+    myoObject.myoData.clearLogs();
+    myoObject.myoData.startStreaming();
+end
+pause(2);
+myoObject.myoData.stopStreaming();
+
+global window_size stride orientation sample_time_ms
+window_size = 300;
+stride = 30;
+user_id = 1;
+user_full_dir = path_root +"Data/preprocessingTest/";
+user_folder = "user"+user_id;
+is_legacy = false;
+userData = loadUserByNameAndDir(user_folder, char(user_full_dir), is_legacy);
+rng('default');
+orientation = getOrientation(userData, user_folder);
+
+sample_time_ms = 996;
+emg_stored_length = size(myoObject.myoData.emg_log, 1);
+sample_begin = max(1, emg_stored_length-sample_time_ms);
+emg = myoObject.myoData.emg_log(sample_begin:emg_stored_length, :);
+
+features_per_window = extractFeaturesByWindowStride(path_root, orientation, window_size, stride, emg);
+fprintf("40 features obtained in %d windows\n", size(features_per_window, 1));
+
+%% Test timer to get features
+global model context;
+addpath(genpath(path_root + "ModelingAndExperiments/RLSetup"));
+context = containers.Map();
+context('tabulation_mode') = 2;
+context('is_preprocessed') = true;
+context('noGestureDetection') = false;
+context('window_size') = window_size;
+context('stride') = stride;
+context('rewards') = struct('correct', 1, 'incorrect', -1);
+context('RepTesting') = 1;
+context('rangeDownTest') = 1;
+    
+model = load(path_root + "ModelingAndExperiments/models_output/" + user_folder + ".mat");
+
+timer_snapshotEMG = timer('Name', 'timer_snapshotEMG', 'TimerFcn', @timerSnapshotEMG, ...
+          'ExecutionMode', 'fixedRate', 'Period', 1);
+start(timer_snapshotEMG);
+
+if deviceType == DeviceName.myo
+    myoObject.myoData.stopStreaming();
+    myoObject.myoData.clearLogs();
+    myoObject.myoData.startStreaming();
+end
+pause(3);
+stop(timer_snapshotEMG);
+myoObject.myoData.stopStreaming();
 
 
-%%
+%% Read other variables of sensor
 
 % Clean up: reset all
 if deviceType == DeviceName.myo
@@ -71,12 +132,12 @@ end
 %}
 
 
-%%
+%% plot figure in real time
 global h plot_call_counter;
 h = animatedline;
 plot_call_counter = 0;
 
-timer_plotAnimatedEMG = timer('Name', 'timer_plotAnimatedEMG', 'TimerFcn', @plotAnimatedEMG, ...
+timer_plotAnimatedEMG = timer('Name', 'timer_plotAnimatedEMG', 'TimerFcn', @timerPlotAnimatedEMG, ...
           'ExecutionMode', 'fixedRate', 'Period', 0.2);
 start(timer_plotAnimatedEMG);
 
