@@ -1,0 +1,2 @@
+- Data distribution is important, packet > random > sequential class.
+- 
