@@ -16,10 +16,6 @@ function history_episode = executeEpisodeEMG(q_neural_network, t, type_execution
     window_size = context('window_size');
     stride = context('stride');
     
-    if is_train_only
-        interval_for_learning = context('interval_for_learning'); 
-        t_for_learning = interval_for_learning; % floor(num_windows/interval_for_learning);
-    end
     
     if is_train_only || is_validation_only
         gestureName = context('gestureName');
@@ -102,7 +98,7 @@ function history_episode = executeEpisodeEMG(q_neural_network, t, type_execution
         if is_train_only || is_validation_only
             context('real_action') = gt_gestures_labels_num(window+1);
             % context is modified by reference
-            [reward, new_state, ~] = functionGetReward(state, action, context);
+            [reward, new_state, ~] = functionGetReward(state, action, q_neural_network.qLearningConfig.rewards, context);
             % in this case, new_state is useless
             finish = window == num_windows-1;
 
@@ -122,7 +118,7 @@ function history_episode = executeEpisodeEMG(q_neural_network, t, type_execution
         if is_train_only
             q_neural_network.saveExperienceReplay(state, action, reward, new_state, finish);
             
-            if mod(step_t, t_for_learning) == 0
+            if mod(step_t, q_neural_network.qLearningConfig.interval_for_learning) == 0
                 % update in each step could be very brute
                 history_learning = q_neural_network.learnFromExperienceReplay(t, verbose_level);
                 if history_learning('learned')

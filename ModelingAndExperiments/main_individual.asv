@@ -108,8 +108,13 @@ hyperparams.sequential_network = Sequential({
     Dense(output_neurons, "xavier"), ...
 });
 
-context = generateContext(params, classes_num_to_name);
+params.window_size = 100;
+params.RepValidation;
 
+    
+    context('window_size') = params.window_size;
+    context('stride') = params.stride;
+context = generateContext(params, classes_num_to_name);
 
 packet_data = orderfields(dir(path_to_data_for_train));
 len_users = 1; % length(packet_data) - 2; % length(packet_data) - 2; 10;

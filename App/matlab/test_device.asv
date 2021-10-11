@@ -222,18 +222,14 @@ end
                                             do_validation, context, 1);
 %% Test again
 
+history_test_incomplete = q_neural_network.runEpisodes(@getRewardEMG, 3, context_for_model_incomplete, 0);  
+time_used_for_qnn_prediction_ms = toc(tic_toc_qnn_prediction) * 1000 ;
 
-context('user_gestures_test') = {gesture_mistake};
-context_for_model_complete('user_gestures_test') = {gesture_mistake};
-context_for_model_incomplete('user_gestures_test') = {gesture_mistake};
-history_test_complete = model_complete.q_neural_network.runEpisodes(@getRewardEMG, 3, context_for_model_complete, 0);  
-history_test_incomplete = model_incomplete.q_neural_network.runEpisodes(@getRewardEMG, 3, context_for_model_incomplete, 0);  
-history_test_transfer = qnn_transfer_learning.runEpisodes(@getRewardEMG, 3, context, 0);  
-
-fprintf("Prediction by [correct=%s, incorrect=%s, transfer=%s]\n", ...
+time_used_total_ms = time_used_for_feature_extraction_ms + time_used_for_qnn_prediction_ms;
+    
+fprintf("*****\nPrediction by model [complete: %s, incomplete: %s] in %.2f[ms]. \n->%.2f[ms] (%.1f %%) used in feature extraction \n->%.2f[ms] (%.1f %%) used in qnn prediction\n", ...
         string(history_test_complete.history_responses{1}.class), ...
         string(history_test_incomplete.history_responses{1}.class), ...
-        string(history_test_transfer.history_responses{1}.class));
 
 %% Test timer to get features
 

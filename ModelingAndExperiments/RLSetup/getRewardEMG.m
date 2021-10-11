@@ -1,10 +1,9 @@
-function [reward, new_state, finish] = getRewardEMG(state, action_selected, context) 
+function [reward, new_state, finish] = getRewardEMG(state, action_selected, all_rewards, context) 
 
     real_action = context('real_action');
     
     finish = -1;  % unknown here, outside yes
     
-    all_rewards = context('rewards');
     if real_action == action_selected
         reward = all_rewards.correct;
     else
