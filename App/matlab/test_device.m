@@ -6,6 +6,9 @@ global path_root;
 path_root = "/home/magody/programming/MATLAB/tesis/";
 
 addpath(genpath(path_root + "ModelingAndExperiments/RLSetup"));
+addpath(genpath(path_root + "ModelingAndExperiments/utils"));
+addpath(genpath(path_root + "ModelingAndExperiments/Experiments"));
+addpath(genpath(path_root + "ModelingAndExperiments/learning"));
 addpath(genpath(path_root + "GeneralLib"));
 addpath(genpath(path_root + "App/matlab/lib/Myo"));
 addpath(path_root + "App/matlab/lib/TimersHandle");
