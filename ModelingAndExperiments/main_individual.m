@@ -17,11 +17,11 @@ addpath(path_root + "ModelingAndExperiments/Experiments");
 addpath(path_root + "ModelingAndExperiments/utils");
 
 %% set parameters
-path_to_data_for_train = horzcat(char(path_root),'Data/preprocessingTest/'); % 'C:\Users\Magody\Documents\GitHub\TesisEMG\Data\preprocessing\'; % '/home/magody/programming/MATLAB/tesis/Data/preprocessing/';
-path_to_data_for_test = horzcat(char(path_root),'Data/preprocessingTest/'); % 'C:\Users\Magody\Documents\GitHub\TesisEMG\Data\preprocessing\'; % '/home/magody/programming/MATLAB/tesis/Data/preprocessing/';
+path_to_data_for_train = horzcat(char(path_root),'Data/preprocessing/'); % 'C:\Users\Magody\Documents\GitHub\TesisEMG\Data\preprocessing\'; % '/home/magody/programming/MATLAB/tesis/Data/preprocessing/';
+path_to_data_for_test = horzcat(char(path_root),'Data/preprocessing/'); % 'C:\Users\Magody\Documents\GitHub\TesisEMG\Data\preprocessing\'; % '/home/magody/programming/MATLAB/tesis/Data/preprocessing/';
 models_folder = path_root + "ModelingAndExperiments/models_debug/";
 
-params.ignoreGestures = ["pinch", "open"];
+params.ignoreGestures = []; % ["pinch", "open"]
 
 gestures_list = ["waveOut", "waveIn", "fist", "open", "pinch", "noGesture"];
 gestures_list_length = length(gestures_list);
@@ -71,7 +71,7 @@ end
 
 params.verbose_level = verbose_level-1;
 params.RepTraining = 150 - (25 * length(params.ignoreGestures));
-params.RepValidation = 150;
+params.RepValidation = 150 - (25 * length(params.ignoreGestures));
 params.RepTesting = 150;
 params.debug_steps = 1;
 
@@ -143,9 +143,9 @@ for k=1:len_users
     end
     do_validation = ~isempty(dataset_part2) || (params.RepTraining < 150 && (params.RepTraining + params.RepValidation) <= 150);
     dataset_complete = [dataset_part1, dataset_part2];
-    context('user_gestures_train') = dataset_complete(1:params.RepTraining-25);
+    context('user_gestures_train') = dataset_complete(1:params.RepTraining);
     if do_validation
-        context('user_gestures_validation') = dataset_complete((params.RepTraining+1-25):(params.RepTraining+params.RepValidation-25));
+        context('user_gestures_validation') = dataset_complete((params.RepTraining+1):(params.RepTraining+params.RepValidation));
     end
     
     clear dataset_part1 dataset_part2 dataset_complete userData;

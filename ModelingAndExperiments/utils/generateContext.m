@@ -3,13 +3,7 @@ function context = generateContext(params, classes_num_to_name)
     context = containers.Map();
     context('classes_num_to_name') = classes_num_to_name;
     
-    classes_name_to_num = containers.Map();
-    list_keys = keys(classes_num_to_name);
-    for i=1:length(list_keys)
-        key = list_keys{i};
-        value = classes_num_to_name(key);
-        classes_name_to_num(value) = key;
-    end
+    classes_name_to_num = deepCopyMapInverse(classes_num_to_name);
     
     context('classes_name_to_num') = classes_name_to_num;
     % prepare_environment();    

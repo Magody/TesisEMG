@@ -5,13 +5,14 @@ close all;
 global path_root;
 path_root = "/home/magody/programming/MATLAB/tesis/";
 
+addpath(genpath(path_root + "ModelingAndExperiments/RLSetup"));
 addpath(genpath(path_root + "GeneralLib"));
 addpath(genpath(path_root + "App/matlab/lib/Myo"));
 addpath(path_root + "App/matlab/lib/TimersHandle");
 addpath(genpath(path_root + "App/matlab/utils/timers"));
 addpath(path_root + "App/matlab/models/device");
 addpath(genpath(path_root + "App/matlab/data"));
-addpath(path_root + "App/matlab/media/UI");
+addpath(genpath(path_root + "App/matlab/media"));
 path_to_framework = "/home/magody/programming/MATLAB/deep_learning_from_scratch/magody_framework";% "C:\Users\Magody\Documents\GitHub\MATLABMagodyFramework\magody_framework"; "/home/magody/programming/MATLAB/deep_learning_from_scratch/magody_framework";
 addpath(genpath(path_to_framework));
 
@@ -23,6 +24,8 @@ deviceType = DeviceName.myo;
 global window_size stride orientation sample_time_ms
 window_size = 300;
 stride = 30;
+params.window_size = window_size;
+params.stride = stride;
 user_id = 1;
 user_full_dir = path_root +"Data/preprocessingTest/";
 user_folder = "user"+user_id;
@@ -34,37 +37,14 @@ orientation = getOrientation(userData, user_folder);
 sample_time_ms = 996;
 
 global model_complete model_incomplete context_for_model_complete context_for_model_incomplete;
-addpath(genpath(path_root + "ModelingAndExperiments/RLSetup"));
+
 
 model_complete = load(path_root + "App/matlab/data/userData" + user_id + "_modelComplete.mat");
 model_incomplete = load(path_root + "App/matlab/data/userData" + user_id + "_modelNoPinchNoOpen.mat");
 
-context_for_model_complete = containers.Map();
-context_for_model_complete('classes_num_to_name') = model_complete.classes_num_to_name;
-context_for_model_complete('classes_name_to_num') = model_complete.classes_name_to_num;
-context_for_model_complete('tabulation_mode') = 2;
-context_for_model_complete('is_preprocessed') = true;
-context_for_model_complete('noGestureDetection') = false;
-context_for_model_complete('window_size') = window_size;
-context_for_model_complete('stride') = stride;
-context_for_model_complete('rewards') = struct('correct', 1, 'incorrect', -1);
-context_for_model_complete('RepTesting') = 1;
-context_for_model_complete('rangeDownTest') = 1;
 
-
-context_for_model_incomplete = containers.Map();
-context_for_model_incomplete('classes_num_to_name') = model_incomplete.classes_num_to_name;
-context_for_model_incomplete('classes_name_to_num') = model_incomplete.classes_name_to_num;
-context_for_model_incomplete('tabulation_mode') = 2;
-context_for_model_incomplete('is_preprocessed') = true;
-context_for_model_incomplete('noGestureDetection') = false;
-context_for_model_incomplete('window_size') = window_size;
-context_for_model_incomplete('stride') = stride;
-context_for_model_incomplete('rewards') = struct('correct', 1, 'incorrect', -1);
-context_for_model_incomplete('RepTesting') = 1;
-context_for_model_incomplete('rangeDownTest') = 1;
-
-
+context_for_model_complete = generateContext(params, model_complete.classes_num_to_name);
+context_for_model_incomplete = generateContext(params, model_incomplete.classes_num_to_name);
 
 %% Start connection
 disp('CONNECTING, please, wait...');
@@ -159,20 +139,15 @@ network_new(layers_range_to_copy) = model_incomplete.q_neural_network.sequential
 network_new(sequential_network_length) = {Dense(output_neurons_new, "xavier")};
 
 
-qnn_transfer_learning = QNeuralNetwork(Sequential({}), Sequential(network_new), model_incomplete.q_neural_network.nnConfig, model_incomplete.q_neural_network.qLearningConfig, model_incomplete.q_neural_network.functionExecuteEpisode);
-qnn_transfer_learning.transferGameReplay(model_incomplete.q_neural_network.gameReplay);
-qnn_transfer_learning.qLearningConfig.interval_for_learning = 10;
-qnn_transfer_learning.qLearningConfig.rewards = struct('correct', 1, 'incorrect', -1);
-qnn_transfer_learning.setCustomRunEpisodes(@customRunEpisodesEMG);
+qnn_online = QNeuralNetwork(Sequential({}), Sequential(network_new), model_incomplete.q_neural_network.nnConfig, model_incomplete.q_neural_network.qLearningConfig, model_incomplete.q_neural_network.functionExecuteEpisode);
+qnn_online.transferGameReplay(model_incomplete.q_neural_network.gameReplay);
+qnn_online.setCustomRunEpisodes(@customRunEpisodesEMG);
 
-%% Train qnn_transfer
-
-params.window_size = window_size;
-params.stride = stride;
 classes_num_to_name = model_incomplete.classes_num_to_name;
 classes_num_to_name(5) = "pinch";
 context = generateContext(params, classes_num_to_name);
 
+%% Prepare reference dataset
 dataset_complete = userData.training;
 known_dataset = {};
 known_classes = string(values(model_incomplete.classes_num_to_name));
@@ -182,6 +157,8 @@ for index_dataset_complete=1:length(dataset_complete)
         known_dataset = [known_dataset, dataset_complete(index_dataset_complete)];
     end
 end
+
+%% Train qnn_transfer
 
 % Filter configuration
 options.rectFcn = 'abs'; % Function for emg rectification
@@ -198,7 +175,6 @@ groundTruthIndex = [0, 0];
 [groundTruthIndex(1), groundTruthIndex(2)] = detectMuscleActivity(emg, options);
 
 plot(emg)
-rect = findall(gcf,'Type', 'rectangle');
 rectangle('Position',[groundTruthIndex(1) -1  groundTruthIndex(2)-groundTruthIndex(1) 2],'EdgeColor','g')
 
 
@@ -218,7 +194,7 @@ if do_validation
 end
 
 [history_episodes_by_epoch, summary, ~] = trainAndValidate(path_to_framework, path_root, ...
-                                            qnn_transfer_learning, 3, ...
+                                            qnn_online, 3, ...
                                             do_validation, context, 1);
 %% Test again
 
@@ -228,7 +204,7 @@ context_for_model_complete('user_gestures_test') = {gesture_mistake};
 context_for_model_incomplete('user_gestures_test') = {gesture_mistake};
 history_test_complete = model_complete.q_neural_network.runEpisodes(@getRewardEMG, 3, context_for_model_complete, 0);  
 history_test_incomplete = model_incomplete.q_neural_network.runEpisodes(@getRewardEMG, 3, context_for_model_incomplete, 0);  
-history_test_transfer = qnn_transfer_learning.runEpisodes(@getRewardEMG, 3, context, 0);  
+history_test_transfer = qnn_online.runEpisodes(@getRewardEMG, 3, context, 0);  
 
 fprintf("Prediction by [correct=%s, incorrect=%s, transfer=%s]\n", ...
         string(history_test_complete.history_responses{1}.class), ...
