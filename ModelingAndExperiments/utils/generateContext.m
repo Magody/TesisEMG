@@ -8,25 +8,6 @@ function context = generateContext(params, classes_num_to_name)
     context('classes_name_to_num') = classes_name_to_num;
     % prepare_environment();    
     
-    if isfield(params, "rangeDown")
-        context('rangeDownTrain') = params.rangeDown;
-    else
-        context('rangeDownTrain') = 1;
-    end
-    
-    if isfield(params, "rangeDownValidation")
-        context('rangeDownValidation') = params.rangeDownValidation;
-    else
-        context('rangeDownValidation') = 1;
-    end
-    
-    if isfield(params, "rangeDownTest")
-        context('rangeDownTest') = params.rangeDownTest;
-    else
-        context('rangeDownTest') = 1;
-    end
-    
-    
     
     context('tabulation_mode') = 2;
     context('is_preprocessed') = true;
@@ -36,6 +17,7 @@ function context = generateContext(params, classes_num_to_name)
     assignin('base','WindowsSize',  params.window_size);
     assignin('base','Stride',  params.stride);
     
+    context("part_of_ground_truth_to_identify") = 0.2;
     
 end
 

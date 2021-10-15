@@ -49,8 +49,10 @@ function history_episode = executeEpisodeEMG(q_neural_network, t, type_execution
         for k = 1:num_windows-1
             gt_gestures_pts(1,k+1)=gt_gestures_pts(1,k)+stride;
         end
+        
+        part_of_ground_truth_to_identify = context("part_of_ground_truth_to_identify");
 
-        gt_gestures_labels = mapGroundTruthToLabelsWithPts(gt_gestures_pts, ground_truth_index, gestureName, 0.2);
+        gt_gestures_labels = mapGroundTruthToLabelsWithPts(gt_gestures_pts, ground_truth_index, gestureName, part_of_ground_truth_to_identify);
         gt_gestures_labels_num = mapGestureLabelsToNumbers(num_windows, gt_gestures_labels, context('classes_name_to_num'));
         
     end

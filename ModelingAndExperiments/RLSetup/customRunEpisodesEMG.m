@@ -14,16 +14,13 @@ function history_episodes = customRunEpisodesEMG(q_neural_network, functionGetRe
     if is_train_only
         % Train
         t = context('global_epoch');
-        user_gestures = context('user_gestures_train');
-        rangeDown = context('rangeDownTrain');
+        user_gestures = context('user_gestures_training');
     elseif is_validation_only
         % Validation
         user_gestures = context('user_gestures_validation');
-        rangeDown = context('rangeDownValidation');
     elseif is_test_only
         % Test
-        rangeDown = context('rangeDownTest');
-        user_gestures = context('user_gestures_test');        
+        user_gestures = context('user_gestures_testing');        
     end
     
     totalGestures = length(user_gestures);
@@ -59,7 +56,7 @@ function history_episodes = customRunEpisodesEMG(q_neural_network, functionGetRe
        rand_data = context('rand_data'); 
     end
     
-    for gesture_number=rangeDown:rangeDown+totalGestures-1
+    for gesture_number=1:totalGestures
 
         if is_preprocessed
             user_gesture_struct = user_gestures{gesture_counter};

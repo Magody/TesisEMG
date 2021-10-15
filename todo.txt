@@ -1,15 +1,3 @@
-- mapGroundTruthToLabelsWithPts ajustar, portion to see
-- en algunas partes como learnFromexperience hago transpuesta porque si, es mejor manejar tamaños bien desde antes
-- reducir espacio de la Data
-- Usar regularización y dropout
-- Label the data of testing in user115 and user209
-- por qué el orden importa mucho?
-- GAN for EMG data augmentation
-- Doc Genetic Algorithm
-- myoObject.myoData.emg_log
-- refactorizar preprocessFeatures con las nuevas funciones pero optimizar en donde se demore
-- Comparar el transfer learning quitando la última capa y transfiriendo algo de pesos.
-- añadir otro método de feedback
 - Sacar curvas por aproach de como abre clasificación y reconocimiento por usuario
 - Sacar resultados de aprendizaje supervisado con ADAM. en la plataforma de evaluación.
 - Usar solo los usuarios del conjunto de entrenamiento, random 100 o todos. Para pruebas formales.
@@ -22,3 +10,7 @@
 - Ir escribiendo mis avances
 - comprobar si el programa depende mucho del rng
 - Use normalization and batch normalization.
+- Label the data of testing in user115 and user209
+- Comparar el transfer learning quitando la última capa y transfiriendo algo de pesos.
+- añadir otro método de feedback
+
