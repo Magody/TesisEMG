@@ -3,3 +3,4 @@ Exp;porc_training;porc_validation;list_users;window_size;stride;seed_rng;gameRep
 2;0.2;0.1;[1];300;30;44;1;1;[1,-1];0.1;mse;100;128;5;5;10;1.00E-03;0.1;;D-40-kaiming-40|A-relu|D-40-kaiming|A-relu|D-6-xavier;test;Just for fast test
 3;0.5;0;[1];300;30;44;1;1;[1,-1];0.1;mse;100;128;5;5;10;1.00E-03;0.1;;D-40-kaiming-40|A-relu|D-40-kaiming|A-relu|D-6-xavier;best;Best model until 11 Oct 2021
 4;0.5;0.2;[1];300;30;44;1;1;[1,-1];0.1;softmax_cross_entropy;100;128;5;5;10;1.00E-03;0.1;;D-40-kaiming-40|A-relu|D-40-kaiming|A-relu|D-6-xavier|A-softmax;supervised;Best model for supervised
+5;0.5;0;[1];300;30;44;1;1;[1,-1];0.1;softmax_cross_entropy;100;128;5;5;10;1.00E-03;0.1;;D-40-kaiming-40|A-relu|D-40-kaiming|A-relu|D-6-xavier|A-softmax;supervised;Best model for supervised

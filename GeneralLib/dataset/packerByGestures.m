@@ -1,8 +1,8 @@
 function packet_gestures = packerByGestures(gestures, ignore_gestures)
 
     if ~isfield(gestures{1}, 'gestureName')
-        disp("\nError, the gestures haven't been labeled in gestureName, returning empty");
-        packet_gestures = {};
+        disp("\nError, the gestures haven't been labeled in gestureName, returning same without ordering");
+        packet_gestures = gestures;
         return;
     end
 

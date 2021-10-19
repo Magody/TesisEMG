@@ -18,3 +18,9 @@ Model-RL:
 - Comparar el transfer learning quitando la última capa y transfiriendo algo de pesos.
 - añadir otro método de feedback
 - Sacar curvas por aproach de como abre clasificación y reconocimiento por usuario
+
+
+
+
+
+
