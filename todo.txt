@@ -1,12 +1,3 @@
-General:
-- Implementar las mejoras a la red Huber, bayes, random optimization, etc.
-- Recordarles el tema de sensor para ir pidiendo
-- Ir escribiendo mis avances
-- Use normalization and batch normalization.
-- Label the data of testing in user115 and user209
-- Usar el código de Francis Ferri para el forward.
-- Graficar la capa oculta para ver que pasa cuando predie
-
 Model-Supervised:
 - Sacar resultados de aprendizaje supervisado con ADAM. en la plataforma de evaluación.
 
@@ -18,9 +9,16 @@ Model-RL:
 - Comparar el transfer learning quitando la última capa y transfiriendo algo de pesos.
 - añadir otro método de feedback
 - Sacar curvas por aproach de como abre clasificación y reconocimiento por usuario
+- Hacer el modelo general
 
 
-
-
+General:
+- Implementar las mejoras a la red Huber, bayes, random optimization, etc.
+- Recordarles el tema de sensor para ir pidiendo
+- Use normalization and batch normalization.
+- Label the data of testing in user115 and user209
+- Usar el código de Francis Ferri para el forward.
+- Graficar la capa oculta para ver que pasa cuando predie
+- Ir escribiendo mis avances
 
 

@@ -1,36 +1,40 @@
+%% lib
 clc;
 clear all;
 close all;
 
-%% lib
 
-path_to_framework = "/home/magody/programming/MATLAB/deep_learning_from_scratch/magody_framework"; % "C:\Users\Magody\Documents\GitHub\MATLABMagodyFramework";% "C:\Users\Magody\Documents\GitHub\MATLABMagodyFramework\magody_framework"; "/home/magody/programming/MATLAB/deep_learning_from_scratch/magody_framework";
+
+path_to_framework = "/home/magody/programming/MATLAB/deep_learning_from_scratch/magody_framework";% "C:\Users\Magody\Documents\GitHub\MATLABMagodyFramework\magody_framework"; "/home/magody/programming/MATLAB/deep_learning_from_scratch/magody_framework";
+
+path_root = "/home/magody/programming/MATLAB/tesis/";
+
 addpath(genpath(path_to_framework));
-addpath(genpath('utils'));
-addpath(genpath('RLSetup'));
+addpath(path_root + "ModelingAndExperiments/utils")
+addpath(path_root + "ModelingAndExperiments/learning")
+addpath(path_root + "ModelingAndExperiments/RLSetup")
+addpath(path_root + "ModelingAndExperiments/Experiments")
+addpath(genpath(path_root + "GeneralLib"));
+
+path_to_data = horzcat(char(path_root), 'Data/preprocessing/'); 
 
 %% parameters GA
 verbose_level = 2;
 
 generations = 10;  % its just a stop step in case the program cant find solution
 max_population = 20;  % while more high, more posibilities to find a good combination faster, but more processing
-num_parents_to_select = 2;  % is better tu select very little, no more than 10% of max population
+num_parents_to_select = 8;
 mutation_rate = 0.9;
 
-amount_examples = 100;
+amount_examples = 1000;
 
 % examples of parameters
-gens_set = [linspace(1, 20, amount_examples); ... % interval_for_learning
-              linspace(1, 10, amount_examples); ...  % epochs_nn
+gens_set = [linspace(5, 20, amount_examples); ... % interval_for_learning
               linspace(0.0003, 0.01, amount_examples); ...  % learning_rate
               linspace(0, 1, amount_examples); ...  % gamma
-              linspace(6, 64, amount_examples); ... % hidden1_neurons
+              linspace(32, 64, amount_examples); ... % hidden1_neurons
               linspace(6, 64, amount_examples); ...  % hidden2_neurons
               linspace(0, 0.9, amount_examples); ... % dropout_rate1
-              linspace(0, 0.9, amount_examples); ... % dropout_rate2
-              linspace(16, 256, amount_examples); ... % batch_size
-              linspace(0.001, 0.3, amount_examples); ... % decay_rate_alpha
-              linspace(20, 1000, amount_examples) % experience_replay_reserved_space
               ];                
                 
           
@@ -84,7 +88,7 @@ for generation=1:generations
     
         % the change for the alele of gen, higher at the begining (exploration), 
         % lower at the end (lower exploration, high explotation)
-        reductor_factor = log(3+generation/3);  % change = R/reductor_factor decreases in the next generations
+        reductor_factor = log(1+generation);  % change = R/reductor_factor decreases in the next generations
 
         [offspring_mutated, register_change] = population.mutate(offspring_crossover, reductor_factor, register_change);  % Creating the new population based on the parents and offspring.
 
@@ -108,7 +112,7 @@ disp(best_chromosome);
 fprintf("Fitness %f\n", fitness(index_best_chromosome));
 
 
-model_dir = "Experiments/gens.mat";
+model_dir = path_root + "ModelingAndExperiments/Experiments/gens.mat";
 save(model_dir,'best_chromosome');
 
 %% figures

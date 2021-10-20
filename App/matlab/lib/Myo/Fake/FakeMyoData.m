@@ -19,6 +19,11 @@ classdef FakeMyoData < handle
         mock_gestures_length;
         index_gesture = 1;
         inter_counter_emg = 1;
+        
+        class_name_to_numstr;
+        map_expected;
+        separation_to_class;
+        class_num_to_name;
     end
     
     
@@ -27,15 +32,7 @@ classdef FakeMyoData < handle
             
             % the map gesture can change
             % inside App/matlab/data
-            userData = load('userData1ForFakeMyo');
-            myoData.map_gesture_index = containers.Map(...
-                ["noGesture", "fist", "open", "pinch", "waveIn", "waveOut"], ...
-                ["1", "26", "51", "76", "101", "126"]);
-            
-            
-            myoData.all_gestures = userData.training;
-            
-            myoData.setSimulationGestures("all");
+            myoData.setUserSource(300);
             
             % Myo works in 200Hz = 5ms, but this simulation works with
             % a sampling collection using batchs of emg points
@@ -64,6 +61,48 @@ classdef FakeMyoData < handle
             
         end
         
+        function setUserSource(myoData, user_id)
+            
+            path_root = "/home/magody/programming/MATLAB/tesis/";
+            
+            userData = load(path_root + "Data/preprocessing/user" + user_id + "/userData.mat");
+            myoData.all_gestures = userData.training;
+            
+            order_classes = ["noGesture", "fist", "open", "pinch", "waveIn", "waveOut"];
+            order_separation = ["0", "25", "50", "75", "100", "125"];
+            
+            myoData.class_name_to_numstr = containers.Map(order_classes, order_separation);
+            myoData.class_num_to_name = containers.Map([1,2,3,4,5,6], order_classes);
+
+            myoData.separation_to_class = containers.Map(order_separation, ...
+                [string(myoData.all_gestures{1}.gestureName), ...
+                string(myoData.all_gestures{26}.gestureName), ...
+                string(myoData.all_gestures{51}.gestureName), ...
+                string(myoData.all_gestures{76}.gestureName), ...
+                string(myoData.all_gestures{101}.gestureName), ...
+                string(myoData.all_gestures{126}.gestureName)]);
+            
+            
+            class_to_separation = containers.Map(values(myoData.separation_to_class), keys(myoData.separation_to_class));
+
+            myoData.map_expected = containers.Map();
+            for index_class=1:length(order_classes)
+                class = order_classes(index_class);
+                separation = order_separation(index_class);
+
+                myoData.map_expected(separation) = class_to_separation(class);
+            end
+            
+            
+            myoData.setSimulationGestures("all");
+        end
+        
+        function setSimulationRandom(myoData)
+            type = myoData.class_num_to_name(randi([1 6]));
+            myoData.setSimulationGestures(type);
+            myoData.index_gesture = randi([1 25]);
+        end
+        
         function setSimulationGestures(myoData, type)
             
             wasStreaming = false;
@@ -73,10 +112,15 @@ classdef FakeMyoData < handle
             end
             
             if type == "all"
-                myoData.mock_gestures = myoData.all_gestures(26:150);  % 100 in user1Test is pinch
                 
+                myoData.mock_gestures = myoData.all_gestures(26:150);
             else
-                index_begin = str2double(myoData.map_gesture_index(type));
+                
+                assumption_num = myoData.class_name_to_numstr(type);
+                
+                
+                actual_separation= str2double(myoData.map_expected(assumption_num));
+                index_begin = 1 + actual_separation;
                 index_end = index_begin + 25 - 1;
                 myoData.mock_gestures = myoData.all_gestures(index_begin:index_end);
                 

@@ -13,17 +13,17 @@ addpath(path_root + "ModelingAndExperiments/RLSetup")
 addpath(path_root + "ModelingAndExperiments/Experiments")
 addpath(genpath(path_root + "GeneralLib"));
 
-path_output = path_root + "ModelingAndExperiments/models_debug/";
+path_output = path_root + "ModelingAndExperiments/models_complete/";
 
-path_to_data_for_train = horzcat(char(path_root),'Data/preprocessingTest/'); % 'C:\Users\Magody\Documents\GitHub\TesisEMG\Data\preprocessing\'; % '/home/magody/programming/MATLAB/tesis/Data/preprocessing/';
-path_to_data_for_testing = horzcat(char(path_root),'Data/preprocessingTest/'); % 'C:\Users\Magody\Documents\GitHub\TesisEMG\Data\preprocessing\'; % '/home/magody/programming/MATLAB/tesis/Data/preprocessing/';
+path_to_data_for_train = horzcat(char(path_root),'Data/preprocessing/'); % 'C:\Users\Magody\Documents\GitHub\TesisEMG\Data\preprocessing\'; % '/home/magody/programming/MATLAB/tesis/Data/preprocessing/';
+path_to_data_for_testing = horzcat(char(path_root),'Data/preprocessing/'); % 'C:\Users\Magody\Documents\GitHub\TesisEMG\Data\preprocessing\'; % '/home/magody/programming/MATLAB/tesis/Data/preprocessing/';
 
 jsonName=horzcat(char(path_output), 'responses.json');
 version = 'testing';
 
 %% set parameters
 verbose_level = 2;
-experiment_id = 3;
+experiment_id = 10;
 experiment_mode = "individual";
 
 experiments_csv = readtable(path_root + 'ModelingAndExperiments/Experiments/experiments_parameters_QNN.csv');

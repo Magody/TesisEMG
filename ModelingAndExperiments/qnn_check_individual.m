@@ -7,18 +7,15 @@ path_to_framework = "/home/magody/programming/MATLAB/deep_learning_from_scratch/
 path_root = "/home/magody/programming/MATLAB/tesis/";
 
 addpath(genpath(path_to_framework));
-addpath(path_root + "ModelingAndExperiments/utils")
-addpath(path_root + "ModelingAndExperiments/learning")
-addpath(path_root + "ModelingAndExperiments/RLSetup")
-addpath(path_root + "ModelingAndExperiments/Experiments")
+addpath(genpath(path_root + "ModelingAndExperiments"))
 addpath(genpath(path_root + "GeneralLib"));
 
 path_to_data = horzcat(char(path_root), 'Data/preprocessing/'); 
-path_output = path_root + "ModelingAndExperiments/models_debug/";
+path_output = path_root + "ModelingAndExperiments/models/models_debug/";
 
 %% Parameters and Hyperparameters setting
 verbose_level = 2;
-experiment_id = 2;
+experiment_id = 9;
 experiment_mode = "individual";
 run_test_as_validation = true;
 use_same_training_set_as_validation = true;
@@ -43,7 +40,7 @@ accuracy_classification_window = 0;
 accuracy_classification = 0;
 accuracy_recognition = 0;
 % This script is for individual model only
-for user_id=1:num_users
+for user_id=208:208 % num_users
     try
         user_folder = "user"+user_id;
         params.qnn_model_dir_name = path_output + params.model_name + "-" + user_folder + ".mat";    

@@ -12,7 +12,7 @@ addpath(path_root + "ModelingAndExperiments/learning")
 addpath(path_root + "ModelingAndExperiments/Experiments")
 addpath(genpath(path_root + "GeneralLib"));
 
-path_output = path_root + "ModelingAndExperiments/models_debug/";
+path_output = path_root + "ModelingAndExperiments/models/models_debug/";
 
 path_to_data_for_train = horzcat(char(path_root),'Data/preprocessingTest/'); % 'C:\Users\Magody\Documents\GitHub\TesisEMG\Data\preprocessing\'; % '/home/magody/programming/MATLAB/tesis/Data/preprocessing/';
 path_to_data_for_testing = horzcat(char(path_root),'Data/preprocessingTest/'); % 'C:\Users\Magody\Documents\GitHub\TesisEMG\Data\preprocessing\'; % '/home/magody/programming/MATLAB/tesis/Data/preprocessing/';
@@ -22,7 +22,7 @@ version = 'testing';
 
 %% set parameters
 verbose_level = 1;
-experiment_id = 5;
+experiment_id = 11;
 experiment_mode = "individual";
 
 experiments_csv = readtable(path_root + 'ModelingAndExperiments/Experiments/experiments_parameters_QNN.csv');
@@ -71,6 +71,7 @@ for user_id=1:num_users
         history_errors = history_train_validation('history_errors');
         history_accuracy_validation = history_train_validation('history_accuracy_validation');
         
+        history_episodes = struct("history_errors", history_errors);
         summary = struct();
         if do_test
             history_episodes = evaluateRecognitionSupervised(neural_network, 2, dataset_testing, context, params.verbose_level-1);

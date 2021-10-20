@@ -1,123 +1,73 @@
-function [accuracy_train, accuracy_test] = qnnModelFeature(params, path_to_data, verbose_level)
+function [accuracy_classification_window, accuracy_classification, accuracy_recognition] = ...
+    qnnModelFeature(gens, path_to_data, path_root, path_to_framework, verbose_level)
 
-    context = containers.Map();
-    RepTraining = 150;
-    RepTesting = 150;
-    rangeDown = 1;
-    rangeDownTesting = 1;
+    
+    experiment_id = 7;
+    experiment_mode = "individual";
 
-    prepare_environment(path_to_data, verbose_level-1);
-    assignin('base','RepTraining',  RepTraining); % initial value
-    context('RepTraining') = RepTraining;
-    context('RepTesting') = RepTesting;
-    context('rangeDownTrain') = rangeDown;
-    context('rangeDownTest') = rangeDown;
-    context('data_dir') = path_to_data;
-    context('interval_for_learning') = params.interval_for_learning;  % in each episode will learn this n times more or less
-    window_size = 300;
-    stride = 30;
-    context('tabulation_mode') = 2;
-    context('is_preprocessed') = true;
-    context('noGestureDetection') = false;
+    experiments_csv = readtable(path_root + 'ModelingAndExperiments/Experiments/experiments_parameters_QNN.csv');
+    params_experiment_row = experiments_csv(experiment_id, :);
 
-    epochs = params.epochs_nn; % epochs inside each NN
-    learning_rate = params.learning_rate;
-    batch_size = params.batch_size;
-    gamma = params.gamma;
-    epsilon = 1;
-    decay_rate_alpha = params.decay_rate_alpha;
-    gameReplayStrategy = 1;
-    experience_replay_reserved_space = params.experience_replay_reserved_space;
-    loss_type = "mse";
-    rewards = struct('correct', 1, 'incorrect', -1);
-
-    context('window_size') = window_size;
-    context('stride') = stride;
-    context('rewards') = rewards;
-    assignin('base','WindowsSize',  window_size);
-    assignin('base','Stride',  stride);
+    [params, hyperparams] = build_params(params_experiment_row, experiment_mode, verbose_level);
+    hyperparams.executeEpisodeEMG = @executeEpisodeEMG;
+    hyperparams.customRunEpisodesEMG = @customRunEpisodesEMG;
 
 
-    sequential_conv_network = Sequential({});
+    gestures_list = ["waveOut", "waveIn", "fist", "open", "pinch", "noGesture"];
+    ignoreGestures = [];
+    classes_num_to_name = getClassNumToName(gestures_list, ignoreGestures);    
+    context = generateContext(params, classes_num_to_name);
+    
+    
+    hyperparams.interval_for_learning = gens.interval_for_learning;  % in each episode will learn this n times more or less
+    hyperparams.learning_rate = gens.learning_rate;
+    hyperparams.gamma = gens.gamma;
+    
 
-    sequential_network = Sequential({
-        Dense(params.hidden1_neurons, "kaiming", 40), ...
+    hyperparams.sequential_network = Sequential({
+        Dense(gens.hidden1_neurons, "kaiming", 40), ...
         Activation("relu"), ...
-        Dropout(params.dropout_rate1), ...
-        Dense(params.hidden2_neurons, "kaiming"), ...
+        Dropout(gens.dropout_rate1), ...
+        Dense(gens.hidden2_neurons, "kaiming"), ...
         Activation("relu"), ...
-        Dropout(params.dropout_rate2), ...
         Dense(6, "kaiming"), ...
     });
 
-    nnConfig = NNConfig(epochs, learning_rate, batch_size, loss_type);
-    nnConfig.decay_rate_alpha = decay_rate_alpha;
 
-    list_users = [1]; % [8 200]; 1:306;
-    list_users_test = [1]; % [1 2]; 1:306;
-    num_users = length(list_users);
-    num_users_test = length(list_users_test);
-    context('num_users') = num_users;
-    context('num_users_test') = num_users_test;
-    context('list_users') = list_users;
-    context('list_users_test') = list_users_test;
+    num_users = length(params.list_users);
+    accuracy_classification_window = 0;
+    accuracy_classification = 0;
+    accuracy_recognition = 0;
+    % This script is for individual model only
+    for user_id=101:101 % num_users
+        try
+            user_folder = "user"+user_id;  
+            [context('user_gestures_training'), context('user_gestures_validation'), context('user_gestures_testing')] = ...
+                splitUserDataIndividual(user_folder, path_to_data, ignoreGestures, params.porc_training, params.porc_validation, "packet");
+            total_episodes = hyperparams.general_epochs * length(context('user_gestures_training')); % if is general: * num_users;
+            q_neural_network = buildQNeuralNetwork(hyperparams, total_episodes);
 
-    total_episodes = RepTraining * num_users;
-    total_episodes_test = RepTesting * num_users_test;
+            do_validation = params.porc_validation > 0;
 
-    qLearningConfig = QLearningConfig(gamma, epsilon, gameReplayStrategy, experience_replay_reserved_space, total_episodes);
-    qLearningConfig.total_episodes_test = total_episodes_test;
-    q_neural_network = QNeuralNetwork(sequential_conv_network, sequential_network, ...
-                        nnConfig, qLearningConfig, @executeEpisodeEMG);    % @executeEpisodeEMGImage 
+            [history_episodes_by_epoch, summary, ~] = trainAndValidate(path_to_framework, path_root, q_neural_network, ...
+                                                hyperparams.general_epochs, do_validation, context, params.verbose_level-1);
 
-    q_neural_network.setCustomRunEpisodes(@customRunEpisodesEMG);
+            if do_validation
+                accuracy_classification_window = accuracy_classification_window + summary{hyperparams.general_epochs, 2}.classification_window_validation.accuracy;
+                accuracy_classification = accuracy_classification + summary{hyperparams.general_epochs, 2}.classification_validation.accuracy;
+                accuracy_recognition = accuracy_recognition + summary{hyperparams.general_epochs, 2}.recognition_validation.accuracy;
+            else
+                accuracy_classification_window = accuracy_classification_window + summary{hyperparams.general_epochs, 1}.classification_window_train.accuracy;
+                accuracy_classification = accuracy_classification + summary{hyperparams.general_epochs, 1}.classification_train.accuracy;
+                accuracy_recognition = accuracy_recognition + summary{hyperparams.general_epochs, 1}.recognition_train.accuracy;
+            end
 
-
-    % % Train
-    if verbose_level > 0
-        fprintf("*****Training with %d users, each one with %d gestures*****\n", num_users, RepTraining);
-    end
-    
-    general_epochs = 5;
-    for epoch=1:general_epochs
-        for index_id_user=1:num_users
-            % extracting user vars
-
-            user_real_id = list_users(index_id_user);
-
-            user_folder = "user"+user_real_id;
-
-            % just use the feature table in the path to data
-            userData = loadUserByNameAndDir(user_folder, path_to_data, false);
-            context('user_gestures') = userData.training; % (randperm(numel(userData.training)));
-
-            context('offset_user') = (index_id_user-1) * RepTraining;
-
-            history_episodes_train = q_neural_network.runEpisodes(@getRewardEMG, false, context, verbose_level-1);
+        catch exception
+            fprintf("Error with %s, \n%s\n", user_folder, exception.message + "->" + ...
+                    exception.stack(1).name + " line: " + exception.stack(1).line);
         end
     end
-    
-    train_metrics_classification_window = getMetricsFromCorrectIncorrect(history_episodes_train('history_classification_window_correct'), history_episodes_train('history_classification_window_incorrect'));
-    train_metrics_classification_class = getMetricsFromCorrectIncorrect(history_episodes_train('history_classification_class_correct'), history_episodes_train('history_classification_class_incorrect'));
-    train_metrics_classification_recognition = getMetricsFromCorrectIncorrect(history_episodes_train('history_classification_recognition_correct'), history_episodes_train('history_classification_recognition_incorrect'));
 
-    accuracy_train = (train_metrics_classification_window('accuracy')*100 + ...
-        train_metrics_classification_class('accuracy')*100 + ...
-        train_metrics_classification_recognition('accuracy')*100)/3;
-    
-    userDataTest = loadUserByNameAndDir("user1", path_to_data, false);
-    context('user_gestures') = userDataTest.testing;
-    
-    history_episodes_test = q_neural_network.runEpisodes(@getRewardEMG, true, context, verbose_level-1);
-
-    
-    test_metrics_classification_window = getMetricsFromCorrectIncorrect(history_episodes_test('history_classification_window_correct'), history_episodes_test('history_classification_window_incorrect'));
-    test_metrics_classification_class = getMetricsFromCorrectIncorrect(history_episodes_test('history_classification_class_correct'), history_episodes_test('history_classification_class_incorrect'));
-    test_metrics_classification_recognition = getMetricsFromCorrectIncorrect(history_episodes_test('history_classification_recognition_correct'), history_episodes_test('history_classification_recognition_incorrect'));
-
-    
-    accuracy_test = (test_metrics_classification_class('accuracy')*100 + ...
-        test_metrics_classification_recognition('accuracy')*100)/2;
     
 
 
