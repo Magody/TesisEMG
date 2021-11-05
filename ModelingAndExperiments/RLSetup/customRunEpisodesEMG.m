@@ -2,6 +2,7 @@ function history_episodes = customRunEpisodesEMG(q_neural_network, functionGetRe
     % each user has their episodes
 
     t = 1;
+    q_neural_network.episode = 0;
     
     window_size = context('window_size');
     stride = context('stride');
@@ -117,7 +118,7 @@ function history_episodes = customRunEpisodesEMG(q_neural_network, functionGetRe
             if history_episode('classification_class_correct')
                 confusion_matrix(class_num_real,class_num_real) = confusion_matrix(class_num_real,class_num_real) + 1;
             else
-                confusion_matrix(class_num_real,class_num_predicted) = confusion_matrix(class_num_real,class_num_predicted) + 1;
+                confusion_matrix(class_num_predicted,class_num_real) = confusion_matrix(class_num_predicted,class_num_real) + 1;
             end
             
             history_classification_window_correct(index_id_user, gesture_counter) = history_episode('classification_window_correct');

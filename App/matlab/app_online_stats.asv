@@ -43,15 +43,8 @@ for i=1:users_len
     key = keys_users{i};
     summary = history_experiments(key);
     
-    for j=1:length(summary.confusion_matrix)
-        add_gesture = summary.add_gesture{j};
-        add_reward = summary.add_reward(j);
-        fprintf("%s %d\n\n", add_gesture, add_reward);
-        confusion_matrix = summary.confusion_matrix{j};
-        plotConfMat(confusion_matrix, summary.labels);
-        disp("");
-    end
-    
+    for j=1:
+    confusion_matrix = summary
  
     data_classification = summary.classification(1:iterations);
     data_recognition = summary.recognition(1:iterations);
