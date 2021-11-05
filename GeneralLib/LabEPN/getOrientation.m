@@ -1,6 +1,6 @@
 function orientation = getOrientation(userData, user_folder)
     syncro        = 4;
-    energy_umbral = 0.2;
+    energy_umbral = 0.06;
     if syncro>0
         for x=1:150
             gesto_=userData.training{x}.gestureName;

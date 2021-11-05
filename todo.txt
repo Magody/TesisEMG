@@ -2,23 +2,57 @@ Model-Supervised:
 - Sacar resultados de aprendizaje supervisado con ADAM. en la plataforma de evaluación.
 
 Model-RL:
-- Usar solo los usuarios del conjunto de entrenamiento, random 100 o todos. Para pruebas formales.
-- Simular nuevo gesto = "Open";
+- Usar solo los usuarios del conjunto de entrenamiento, random 100 o todos. Para pruebas formales. sacar desviación estandar y todo eso con las fórmulas de muestra población
+-RESET RNG
 - Preparar streaming
+- Sacar curvas por aproach de como abre clasificación y reconocimiento por usuario
 - Mejorar el algoritmo de reconocimiento de actividad muscular
 - Comparar el transfer learning quitando la última capa y transfiriendo algo de pesos.
 - añadir otro método de feedback
-- Sacar curvas por aproach de como abre clasificación y reconocimiento por usuario
-- Hacer el modelo general
+
+
 
 
 General:
+- Usar el código de Francis Ferri para el forward.
 - Implementar las mejoras a la red Huber, bayes, random optimization, etc.
 - Recordarles el tema de sensor para ir pidiendo
 - Use normalization and batch normalization.
 - Label the data of testing in user115 and user209
-- Usar el código de Francis Ferri para el forward.
-- Graficar la capa oculta para ver que pasa cuando predie
+-Crear un supresor de ruido para usuarios como el 101
+- Graficar la capa oculta para ver que pasa cuando predice
 - Ir escribiendo mis avances
+- Hacer el modelo general
+- usar bayes o random para mejorar el reconocedor de actividad
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+dar gestos
+sacar matrices de confusión
+revisar el artículo para tomar ideas 
+
+
+
+
+
+
+
+
 
 

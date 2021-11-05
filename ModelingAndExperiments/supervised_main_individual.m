@@ -1,7 +1,6 @@
 %% Lib and dirs
 clc;
 clear all;
-close all;
 path_to_framework = "/home/magody/programming/MATLAB/deep_learning_from_scratch/magody_framework";% "C:\Users\Magody\Documents\GitHub\MATLABMagodyFramework\magody_framework"; "/home/magody/programming/MATLAB/deep_learning_from_scratch/magody_framework";
 
 path_root = "/home/magody/programming/MATLAB/tesis/";
@@ -12,7 +11,7 @@ addpath(path_root + "ModelingAndExperiments/learning")
 addpath(path_root + "ModelingAndExperiments/Experiments")
 addpath(genpath(path_root + "GeneralLib"));
 
-path_output = path_root + "ModelingAndExperiments/models/models_debug/";
+path_output = path_root + "ModelingAndExperiments/models/models_supervised/";
 
 path_to_data_for_train = horzcat(char(path_root),'Data/preprocessingTest/'); % 'C:\Users\Magody\Documents\GitHub\TesisEMG\Data\preprocessing\'; % '/home/magody/programming/MATLAB/tesis/Data/preprocessing/';
 path_to_data_for_testing = horzcat(char(path_root),'Data/preprocessingTest/'); % 'C:\Users\Magody\Documents\GitHub\TesisEMG\Data\preprocessing\'; % '/home/magody/programming/MATLAB/tesis/Data/preprocessing/';
@@ -22,7 +21,7 @@ version = 'testing';
 
 %% set parameters
 verbose_level = 1;
-experiment_id = 11;
+experiment_id = 10;  % 10 11
 experiment_mode = "individual";
 
 experiments_csv = readtable(path_root + 'ModelingAndExperiments/Experiments/experiments_parameters_QNN.csv');
@@ -36,9 +35,13 @@ classes_num_to_name = getClassNumToName(gestures_list, ignoreGestures);
 context = generateContext(params, classes_num_to_name);
 
 
+users = dir(path_to_data_for_testing);
+users = users(3:end);
+num_users = length(users);
+
+
 %% Train and validate
 t_begin = tic;
-num_users = length(params.list_users);
 accuracy_classification_window = 0;
 accuracy_classification = 0;
 accuracy_recognition = 0;
@@ -129,9 +132,9 @@ if run_test_as_validation
     type_execution = 2;
 end
 
-for user_id=1:num_users
+for i=1:num_users
     try
-        user_folder = "user"+user_id;
+        user_folder = users(i).name;
         
         context('offset_user') = 0;
         
@@ -189,7 +192,7 @@ if run_test_as_validation
 end
 
 %% Export  in json
-jsonFormat(jsonName, version, Rep, results);
+jsonFormat(jsonName, results);
 
 
 

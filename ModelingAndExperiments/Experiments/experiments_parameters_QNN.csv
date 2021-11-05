@@ -1,12 +1,14 @@
 Exp;porc_training;porc_validation;list_users;window_size;stride;seed_rng;gameReplayStrategy;epsilon;rewards;decay_rate_alpha;loss_type;experience_replay_reserved_space;batch_size;general_epochs;inner_epochs;interval_for_learning;learning_rate;gamma;conv_network;network;model_name;description
 1;0.5;0.3;[1];300;30;44;1;1;[1,-1];0.1;mse;100;128;5;5;10;1.00E-03;0.1;;D-40-kaiming-40|A-relu|D-40-kaiming|A-relu|D-6-xavier;best;Best model until 11 Oct 2021
 2;0.2;0.1;[1];300;30;44;1;1;[1,-1];0.1;mse;100;128;5;5;10;1.00E-03;0.1;;D-40-kaiming-40|A-relu|D-40-kaiming|A-relu|D-6-xavier;test;Just for fast test
-3;0.5;0;[1];300;30;44;1;1;[1,-1];0.1;mse;100;128;5;5;10;1.00E-03;0.1;;D-40-kaiming-40|A-relu|D-40-kaiming|A-relu|D-6-xavier;best;Best model until 11 Oct 2021
+3;0.5;0;[1];300;30;44;1;1;[1,-1];0.1;mse;100;128;5;5;10;1.00E-03;0.1;;D-40-kaiming-40|A-relu|D-40-kaiming|A-relu|D-6-xavier;best;
 4;0.5;0.2;[1];300;30;44;1;1;[1,-1];0.1;softmax_cross_entropy;100;128;5;5;10;1.00E-03;0.1;;D-40-kaiming-40|A-relu|D-40-kaiming|A-relu|D-6-xavier|A-softmax;supervised;Best model for supervised
 5;0.5;0;[1];300;30;44;1;1;[1,-1];0.1;softmax_cross_entropy;100;128;5;5;10;1.00E-03;0.1;;D-40-kaiming-40|A-relu|D-40-kaiming|A-relu|D-6-xavier|A-softmax;supervised;Best model for supervised
 6;0.5;0.3;[1];300;30;44;1;1;[1,-1];0.1;mse;100;128;1;1;10;1.00E-03;0.1;;D-40-kaiming-40|A-relu|D-40-kaiming|A-relu|D-6-xavier;best;
 7;0.5;0.3;[101];300;30;44;1;1;[1,-1];0.1;mse;100;128;5;5;6;0.0043;0.4419;;D-45-kaiming-40|A-relu|Dropout-0.055|D-60-kaiming|A-relu|D-6-xavier;best;
-8;0.5;0.3;[101];300;30;44;1;1;[1,-1];0.1;mse;100;128;3;5;7;0.002;0.3053;;D-42-kaiming-40|A-relu|Dropout-0.0027|D-36-kaiming|A-relu|D-6-xavier;best;
+8;0.5;0.3;[101];300;30;44;1;1;[1,-1];0.1;mse;100;128;3;5;7;2;0.3053;;D-42-kaiming-40|A-relu|Dropout-0.0027|D-36-kaiming|A-relu|D-6-xavier;best;
 9;0.5;0.3;[101];300;30;44;1;1;[1,-1];0.1;mse;100;128;5;5;6;0.0043;0.1;;D-40-kaiming-40|A-relu|D-60-kaiming|A-relu|D-6-xavier;best;
 10;0.5;0;1:306;300;30;44;1;1;[1,-1];0.1;mse;100;128;5;5;10;1.00E-03;0.1;;D-40-kaiming-40|A-relu|D-40-kaiming|A-relu|D-6-xavier;best;Best model until 11 Oct 2021
 11;0.5;0;1:306;300;30;44;1;1;[1,-1];0.1;mse;100;64;20;5;10;5.00E-03;0.1;;D-40-kaiming-40|A-relu|D-40-kaiming|A-relu|D-6-xavier;Best-mod;Best model modified
+12;0.5;0;1:306;300;30;44;1;1;[1,-1];0.1;mse;100;128;5;5;10;1.00E-03;0.1;;D-40-kaiming-40|A-relu|D-40-kaiming|A-relu|D-6-xavier;complete;Models for complete evaluation
+13;0.5;0;1:306;300;30;44;1;1;[1,-1];0.1;mse;100;128;5;5;10;1.00E-03;0.1;;D-40-kaiming-40|A-relu|D-40-kaiming|A-relu|D-4-xavier;incomplete;no pinch no open

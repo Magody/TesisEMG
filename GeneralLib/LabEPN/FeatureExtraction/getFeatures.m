@@ -1,90 +1,35 @@
-function emgActivity = getFeatures(emgData)
-% --------------------------------------------------------------------
-% This code is based on the paper entitled                     
-% "An Energy-based Method for Orientation Correction
-% of EMG Bracelet Sensors in Hand Gesture Recognition Systems"
-% by Victor Hugo Vimos T.
-%
-% *Victor Hugo Vimos T / victor.vimos@epn.edu.ec
-% --------------------------------------------------------------------
+function emgActivity = getFeatures(emgData, default, low_umbral, high_umbral)
 
-
-
-low_umbral       = evalin('base','low_umbral');
-high_umbral      = evalin('base','high_umbral');
-energy_          = WMoos_F5(emgData');
-
-    
-tic 
-
-if sum(energy_(1:4,:)) > high_umbral  || sum(energy_(5:8,:)) > low_umbral 
-   
     TestedData=emgData';
-    Ms1=TestedData(1,:);
-    Ms2=TestedData(2,:);
-    Ms3=TestedData(3,:);
-    Ms4=TestedData(4,:);
-    Ms5=TestedData(5,:);
-    Ms6=TestedData(6,:);
-    Ms7=TestedData(7,:);
-    Ms8=TestedData(8,:);
-    TableEmgData = table(Ms1,Ms2,Ms3,Ms4,Ms5,Ms6,Ms7,Ms8);
+    energy_          = WMoos_F5(TestedData);
+
+    if sum(energy_(1:4,:)) > high_umbral  || sum(energy_(5:8,:)) > low_umbral
+        
+        var_names_f5 = {'WMoos_F5_Ms1','WMoos_F5_Ms2','WMoos_F5_Ms3','WMoos_F5_Ms4','WMoos_F5_Ms5','WMoos_F5_Ms6','WMoos_F5_Ms7','WMoos_F5_Ms8'};
+        WM_F5 = table(energy_(1),energy_(2),energy_(3),energy_(4),energy_(5),energy_(6),energy_(7),energy_(8),'VariableNames', var_names_f5);
+        
+        Ms1=TestedData(1,:);
+        Ms2=TestedData(2,:);
+        Ms3=TestedData(3,:);
+        Ms4=TestedData(4,:);
+        Ms5=TestedData(5,:);
+        Ms6=TestedData(6,:);
+        Ms7=TestedData(7,:);
+        Ms8=TestedData(8,:);
+        TableEmgData = table(Ms1,Ms2,Ms3,Ms4,Ms5,Ms6,Ms7,Ms8);
+
+        WM_F1   =   varfun(@WMoos_F1,     TableEmgData);
+        WM_F2   =   varfun(@WMoos_F2,     TableEmgData);
+        WM_F3   =   varfun(@WMoos_F3,     TableEmgData);
+        WM_F4   =   varfun(@WMoos_F4,     TableEmgData);
+        % WM_F5   =   varfun(@WMoos_F5,     TableEmgData);
 
 
+        emgActivity      = [WM_F1,  WM_F2,  WM_F3,  WM_F4,  WM_F5];
 
-    WM_F1   =   varfun(@WMoos_F1,     TableEmgData);
-    WM_F2   =   varfun(@WMoos_F2,     TableEmgData);
-    WM_F3   =   varfun(@WMoos_F3,     TableEmgData);
-    WM_F4   =   varfun(@WMoos_F4,     TableEmgData);
-    WM_F5   =   varfun(@WMoos_F5,     TableEmgData);
-   
-
-    emgActivity      = [WM_F1,  WM_F2,  WM_F3,  WM_F4,  WM_F5];
-
-                          
-    assignin('base','check_umbral','classificationNeeded'); 
-    timeFeaturing=toc; 
-    assignin('base','timeFeaturing',timeFeaturing);
-    assignin('base','EMG_Activity',"Gesture");
-else 
-    timeFeaturing=toc;
-   
-    % =============================================================
-    %emgActivity=0;
-    
-    Ms1=zeros(200,1)';
-    Ms2=zeros(200,1)';
-    Ms3=zeros(200,1)';
-    Ms4=zeros(200,1)';
-    Ms5=zeros(200,1)';
-    Ms6=zeros(200,1)';
-    Ms7=zeros(200,1)';
-    Ms8=zeros(200,1)';
-    
-    TableEmgData = table(Ms1,Ms2,Ms3,Ms4,Ms5,Ms6,Ms7,Ms8);
-
-
-
-    WM_F1   =   varfun(@WMoos_F1,     TableEmgData);
-    WM_F2   =   varfun(@WMoos_F2,     TableEmgData);
-    WM_F3   =   varfun(@WMoos_F3,     TableEmgData);
-    WM_F4   =   varfun(@WMoos_F4,     TableEmgData);
-    WM_F5   =   varfun(@WMoos_F5,     TableEmgData);
-   
-
-    emgActivity      = [WM_F1,  WM_F2,  WM_F3,  WM_F4,  WM_F5];
-    
-    % ============================================================
-    
-    
-    
-    assignin('base','check_umbral','noClassificationNeeded');
-    assignin('base','timeFeaturing',timeFeaturing);
-    assignin('base','EMG_Activity',"noGesture");
-end
-
-
-
+    else 
+        emgActivity = default;    
+    end
 
 end
 

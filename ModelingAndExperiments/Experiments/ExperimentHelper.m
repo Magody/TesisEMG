@@ -13,7 +13,7 @@ classdef ExperimentHelper < handle
                              "classes_name_to_num");
         end
         
-        function [summary, responses] = testModelIndividual(model, ...
+        function [summary, responses, history_test] = testModelIndividual(model, ...
                 run_as_validation, context, verbose_level)
             
             summary.classification_window_test = 0;

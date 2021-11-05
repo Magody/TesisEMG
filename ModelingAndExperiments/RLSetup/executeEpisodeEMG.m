@@ -29,7 +29,24 @@ function history_episode = executeEpisodeEMG(q_neural_network, t, type_execution
     is_preprocessed = context('is_preprocessed');
     
     if is_preprocessed
+        
         features_per_window = context('features_per_window');
+        
+        %{
+        if gestureName ~= "noGesture"
+            
+            data_mean = mean(features_per_window, 1);
+            data_std = std(features_per_window, 1, 1);
+            features_per_window = standardizationCustom(features_per_window, "vertical2D", data_mean, data_std);
+        
+            data_mean = 0.1; % mean(features_per_window, 1);
+            data_std = 0.1; % std(features_per_window, 1, 1);
+            features_per_window = standardizationCustom(features_per_window, "vertical2D", data_mean, data_std);
+        
+        end
+        %}
+        
+        
         num_windows = context('num_windows');
         emg_points = context('emg_points');
     else
@@ -41,7 +58,9 @@ function history_episode = executeEpisodeEMG(q_neural_network, t, type_execution
     end
     
     if is_train_only || is_validation_only
+        
         ground_truth_gt = getGroundTruthGT(emg_points, ground_truth_index);
+        
         
         gt_gestures_pts=zeros([1,num_windows]);
         gt_gestures_pts(1,1)=window_size;
@@ -153,7 +172,7 @@ function history_episode = executeEpisodeEMG(q_neural_network, t, type_execution
            ProcessingTimes_vector(window) = mean(ProcessingTimes_vector(1:num_windows-1)); 
         end
         if TimePoints_vector(window) == 0
-           TimePoints_vector(window) = TimePoints_vector(window-1) + stride; 
+            TimePoints_vector(window) = TimePoints_vector(window-1) + stride; 
         end
     end
     

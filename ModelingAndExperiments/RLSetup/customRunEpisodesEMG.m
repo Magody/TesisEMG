@@ -11,6 +11,11 @@ function history_episodes = customRunEpisodesEMG(q_neural_network, functionGetRe
     is_validation_only = type_execution == 2;
     is_test_only = type_execution == 3;
     
+    
+    num_classes = length(context('classes_name_to_num'));
+    
+    confusion_matrix = zeros([num_classes, num_classes]);
+    
     if is_train_only
         % Train
         t = context('global_epoch');
@@ -18,6 +23,8 @@ function history_episodes = customRunEpisodesEMG(q_neural_network, functionGetRe
     elseif is_validation_only
         % Validation
         user_gestures = context('user_gestures_validation');
+        
+        
     elseif is_test_only
         % Test
         user_gestures = context('user_gestures_testing');        
@@ -84,13 +91,15 @@ function history_episodes = customRunEpisodesEMG(q_neural_network, functionGetRe
                  context('ground_truth_index') = user_gesture_struct.groundTruthIndex;
             end
         end
-
-
+        
         history_episode = q_neural_network.functionExecuteEpisode(q_neural_network, t, type_execution, functionGetReward, context, verbose_level-1);
 
+        
+        
         history_rewards(index_id_user, gesture_counter) = history_episode('reward_cummulated');
-
-        history_responses{index_id_user, gesture_counter} = history_episode('response');
+        
+        response = history_episode('response');
+        history_responses{index_id_user, gesture_counter} = response;
 
         if is_train_only
             update_costs = history_episode('update_costs');
@@ -100,7 +109,17 @@ function history_episodes = customRunEpisodesEMG(q_neural_network, functionGetRe
         end
         
         if is_train_only || is_validation_only
-
+            
+            name_to_num = context('classes_name_to_num');
+            class_num_real = name_to_num(string(context('gestureName')));
+            class_num_predicted = name_to_num(string(response.class));
+            
+            if history_episode('classification_class_correct')
+                confusion_matrix(class_num_real,class_num_real) = confusion_matrix(class_num_real,class_num_real) + 1;
+            else
+                confusion_matrix(class_num_real,class_num_predicted) = confusion_matrix(class_num_real,class_num_predicted) + 1;
+            end
+            
             history_classification_window_correct(index_id_user, gesture_counter) = history_episode('classification_window_correct');
             history_classification_window_incorrect(index_id_user, gesture_counter) = history_episode('classification_window_incorrect');
 
@@ -133,6 +152,8 @@ function history_episodes = customRunEpisodesEMG(q_neural_network, functionGetRe
 
         history_episodes.history_recognition_correct = history_recognition_correct;
         history_episodes.history_recognition_incorrect = history_recognition_incorrect;
+    
+        history_episodes.confusion_matrix = confusion_matrix;
     end
     
     

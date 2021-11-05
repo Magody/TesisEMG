@@ -1,7 +1,6 @@
 %% Lib and dirs
 clc;
 clear all;
-close all;
 path_to_framework = "/home/magody/programming/MATLAB/deep_learning_from_scratch/magody_framework";% "C:\Users\Magody\Documents\GitHub\MATLABMagodyFramework\magody_framework"; "/home/magody/programming/MATLAB/deep_learning_from_scratch/magody_framework";
 
 path_root = "/home/magody/programming/MATLAB/tesis/";
@@ -13,7 +12,7 @@ addpath(path_root + "ModelingAndExperiments/RLSetup")
 addpath(path_root + "ModelingAndExperiments/Experiments")
 addpath(genpath(path_root + "GeneralLib"));
 
-path_output = path_root + "ModelingAndExperiments/models_complete/";
+path_output = path_root + "ModelingAndExperiments/models/models_test_low_umbral/";  % test_low_umbral
 
 path_to_data_for_train = horzcat(char(path_root),'Data/preprocessing/'); % 'C:\Users\Magody\Documents\GitHub\TesisEMG\Data\preprocessing\'; % '/home/magody/programming/MATLAB/tesis/Data/preprocessing/';
 path_to_data_for_testing = horzcat(char(path_root),'Data/preprocessing/'); % 'C:\Users\Magody\Documents\GitHub\TesisEMG\Data\preprocessing\'; % '/home/magody/programming/MATLAB/tesis/Data/preprocessing/';
@@ -23,8 +22,9 @@ version = 'testing';
 
 %% set parameters
 verbose_level = 2;
-experiment_id = 10;
+experiment_id = 12;
 experiment_mode = "individual";
+
 
 experiments_csv = readtable(path_root + 'ModelingAndExperiments/Experiments/experiments_parameters_QNN.csv');
 params_experiment_row = experiments_csv(experiment_id, :);
@@ -38,15 +38,17 @@ ignoreGestures = [];
 classes_num_to_name = getClassNumToName(gestures_list, ignoreGestures);    
 context = generateContext(params, classes_num_to_name);
 
+users = dir(path_to_data_for_testing);
+users = users(3:end);
+num_users = length(users);
 
 %% Train and validate
 t_begin = tic;
-num_users = length(params.list_users);
 accuracy_classification_window = 0;
 accuracy_classification = 0;
 accuracy_recognition = 0;
 % This script is for individual model only
-for user_id=1:num_users
+for user_id=189:189 % num_users
     try
         user_folder = "user"+user_id;
         params.qnn_model_dir_name = path_output + params.model_name + "-" + user_folder + ".mat";    
@@ -86,7 +88,7 @@ end
 
 %% Test
 
-run_test_as_validation = false;
+run_test_as_validation = true;
 use_same_training_set_as_validation = true;
 
 accuracy_classification = 0;
@@ -96,16 +98,21 @@ Rep = 150;  % below it is not controlled, is with length(responses)
 
 results = struct();
 
-for user_id=1:num_users
+for i=100:100 % num_users  % 3 for user100
     try
-        user_folder = "user"+user_id;
+        user_folder = users(i).name;
+        
+        if user_folder == "user115" || user_folder == "user209"
+            continue;
+        end
         
         context('offset_user') = 0;
         
+        % params.model_name + "-" + 
         params.qnn_model_dir_name = path_output + params.model_name + "-" + user_folder + ".mat";    
         qnn_model = load(params.qnn_model_dir_name);
         
-        q_neural_network = qnn_model.model;
+        q_neural_network = qnn_model.model; % q_neural_network;
         
         [context('user_gestures_training'), context('user_gestures_validation'), context('user_gestures_testing')] = ...
             splitUserDataIndividual(user_folder, path_to_data_for_testing, ignoreGestures, params.porc_training, params.porc_validation, "normal");
@@ -116,7 +123,7 @@ for user_id=1:num_users
                 context('user_gestures_validation') = context('user_gestures_training');
             end
         end
-        [summary, responses] = ExperimentHelper.testModelIndividual(q_neural_network, run_test_as_validation, context, verbose_level-1);
+        [summary, responses, history_test] = ExperimentHelper.testModelIndividual(q_neural_network, run_test_as_validation, context, verbose_level-1);
         
         if run_test_as_validation
             accuracy_classification = accuracy_classification + summary.classification_test;
@@ -142,12 +149,8 @@ end
 
 if run_test_as_validation
    fprintf("Mean final class: %.4f, Final recognition: %.4f\n", ...
-       accuracy_classification/num_users, accuracy_recognition/num_users); 
+       accuracy_classification/(num_users-2), accuracy_recognition/(num_users-2)); 
 end
 
 %% Export  in json
 jsonFormat(jsonName, version, Rep, results);
-
-
-
-

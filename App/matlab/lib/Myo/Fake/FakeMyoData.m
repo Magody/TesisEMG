@@ -103,6 +103,17 @@ classdef FakeMyoData < handle
             myoData.index_gesture = randi([1 25]);
         end
         
+        function emg = getSample(myoData, type)
+            
+            assumption_num = myoData.class_name_to_numstr(type);
+                
+            actual_separation= str2double(myoData.map_expected(assumption_num));
+            index_begin = 1 + actual_separation;
+            
+            gesture = myoData.all_gestures{index_begin};
+            emg = gesture.emg;
+        end
+        
         function setSimulationGestures(myoData, type)
             
             wasStreaming = false;

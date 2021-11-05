@@ -45,7 +45,7 @@ function history_episode = testRecognitionGestureSupervised(neural_network, type
     classification_window_correct = 0;
     classification_window_incorrect = 0;
     
-    expected_num_windows = getNumberWindows(999, window_size, stride, false);
+    expected_num_windows = getNumberWindows(999, window_size, stride, false)-1;
     
     
     etiquetas_labels_predichas_vector = strings([expected_num_windows, 1]);
@@ -56,15 +56,13 @@ function history_episode = testRecognitionGestureSupervised(neural_network, type
     index_state_begin = 1;
     index_state_end = window_size;
     
-    t1 = tic;
     raw_prediction = neural_network.predict(features_per_window');
     [~, idx_pred] = max(raw_prediction);
-    t2 = toc(t1)/num_windows;
     
     
     
     tic;
-    for window=1:num_windows
+    for window=1:num_windows-1
         action = idx_pred(window);
         etiquetas_labels_predichas_vector(window, 1) = classes_num_to_name(action);
         
@@ -76,7 +74,7 @@ function history_episode = testRecognitionGestureSupervised(neural_network, type
             end
         end
         
-        ProcessingTimes_vector(1,window) = t2 + toc;  %mido tiempo transcurrido desde ultimo cambio de gesto
+        ProcessingTimes_vector(1,window) = toc;  %mido tiempo transcurrido desde ultimo cambio de gesto
         TimePoints_vector(1,window)=index_state_end;
         tic;
         index_state_begin = index_state_begin + stride;
