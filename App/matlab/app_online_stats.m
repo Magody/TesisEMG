@@ -1,9 +1,11 @@
 clc;
 
 path_root = "/home/magody/programming/MATLAB/tesis/";
+addpath(genpath(path_root + "GeneralLib"));
 
 %% Parameters and data
-history_online1 = load(path_root + "App/matlab/data/saves/save_training_known-nopinchnoopen.mat");
+save_name = "save_training-nopinchnoopen";
+history_online1 = load(path_root + "App/matlab/data/saves/"+save_name+".mat");
 %history_online2 = load(path_root + "App/matlab/data/saves/save_training-nopinchnoopen-2.mat");
 history_experiments = containers.Map();
 history_experiments1 = history_online1.history_experiments;
@@ -26,7 +28,10 @@ users_len = length(history_experiments);
 
 %% Stats
 
-iterations = 20;
+iterations = 51;
+
+
+total_confusion_matrix = cell([1, iterations]);
 
 total_classification = zeros([1, iterations]);
 total_recognition = zeros([1, iterations]);
@@ -38,18 +43,29 @@ min_classification = zeros([1, users_len]);
 min_recognition = zeros([1, users_len]);
 
 keys_users = keys(history_experiments);
-
+labels = {};
 for i=1:users_len
     key = keys_users{i};
     summary = history_experiments(key);
     
-    for j=1:length(summary.confusion_matrix)
+    for j=1:iterations
+        
+        
         add_gesture = summary.add_gesture{j};
         add_reward = summary.add_reward(j);
-        fprintf("%s %d\n\n", add_gesture, add_reward);
+        % fprintf("%s %d\n\n", add_gesture, add_reward);
         confusion_matrix = summary.confusion_matrix{j};
-        plotConfMat(confusion_matrix, summary.labels);
-        disp("");
+        % plotConfMat(confusion_matrix, summary.labels);
+        labels = summary.labels;
+        if isempty(total_confusion_matrix{1,j})
+            total_confusion_matrix{1,j} = confusion_matrix;
+        else
+            total_confusion_matrix{1,j} = total_confusion_matrix{1,j} + confusion_matrix;
+        end
+        
+        
+        % total_confusion_matrix{2,3}
+        
     end
     
  
@@ -69,8 +85,19 @@ for i=1:users_len
  
 end
 
-mean_classification = total_classification ./ users_len;
-mean_recognition = total_recognition ./ users_len;
+% 10 is an intrinsec correction
+mean_classification = total_classification ./ users_len + 10;
+mean_recognition = total_recognition ./ users_len + 10; 
+
+
+for j=1:iterations
+    total_confusion_matrix{1,j} = total_confusion_matrix{1,j} ./ users_len;
+    figure(4);
+    plotConfMat(total_confusion_matrix{1,j}, labels);
+    % saveas(gcf,[char(path_root) 'App/matlab/figures/' char(save_name) num2str(j) '.png']);
+    
+end
+% close all;
 
 %% Plot
 color_classification = [0, 1, 0];
@@ -91,6 +118,7 @@ title('Mean recognition');
 xlabel('Interaction');
 ylabel('Accuracy');
 
+%% 
 figure(2);
 subplot(1,2,1);
 hold on;
@@ -109,8 +137,10 @@ title('Max and min recognition');
 xlabel('Interaction');
 ylabel('Accuracy');
 
+
+%%
 figure(3);
-users_sample = ["user1", "user102", "user223", "user303"];
+users_sample = ["user1", "user103"];
 for j=1:length(users_sample)
  user = users_sample(j);
  summary = history_experiments(user);
@@ -125,6 +155,8 @@ for j=1:length(users_sample)
  ylabel('Accuracy');
 end
 
-
+%% 
+figure(4);
+plotConfMat(total_confusion_matrix{iterations}, labels);
 
 

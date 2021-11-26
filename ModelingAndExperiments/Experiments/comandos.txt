@@ -55,6 +55,16 @@ matlab -nosplash -noFigureWindows -batch "try; cd('C:\Users\Magody\Documents\Git
 
 matlab -nosplash -noFigureWindows -batch "try; cd('C:\Users\Magody\Documents\GitHub\TesisEMG\app_main'); execute_experiments_merge_user('data2', 'C:\Users\Magody\Documents\GitHub\MATLABMagodyFramework', 'C:\Users\Magody\Documents\GitHub\TesisEMG\Data\', 2, @executeEpisodeEMG, false, 0, false, [34]); quit; catch ME; disp(ME); end;"
 
+/usr/local/MATLAB/R2021a/bin/matlab -nosplash -noFigureWindows -batch "try; cd('/home/magody/programming/MATLAB/tesis/ModelingAndExperiments'); helper_individual_train('/home/magody/programming/MATLAB/deep_learning_from_scratch/magody_framework', '/home/magody/programming/MATLAB/tesis/', 'preprocessing', 13, 'models_no_pinch_no_open', ['pinch', 'open'], 1,75); quit; catch ME; disp(ME); end;"
+
+/usr/local/MATLAB/R2021a/bin/matlab -nosplash -noFigureWindows -batch "try; cd('/home/magody/programming/MATLAB/tesis/ModelingAndExperiments'); helper_individual_train('/home/magody/programming/MATLAB/deep_learning_from_scratch/magody_framework', '/home/magody/programming/MATLAB/tesis/', 'preprocessing', 13, 'models_no_pinch_no_open', ['pinch', 'open'], 76,150); quit; catch ME; disp(ME); end;"
+
+/usr/local/MATLAB/R2021a/bin/matlab -nosplash -noFigureWindows -batch "try; cd('/home/magody/programming/MATLAB/tesis/ModelingAndExperiments'); helper_individual_train('/home/magody/programming/MATLAB/deep_learning_from_scratch/magody_framework', '/home/magody/programming/MATLAB/tesis/', 'preprocessing', 13, 'models_no_pinch_no_open', ['pinch', 'open'], 151,225); quit; catch ME; disp(ME); end;"
+
+/usr/local/MATLAB/R2021a/bin/matlab -nosplash -noFigureWindows -batch "try; cd('/home/magody/programming/MATLAB/tesis/ModelingAndExperiments'); helper_individual_train('/home/magody/programming/MATLAB/deep_learning_from_scratch/magody_framework', '/home/magody/programming/MATLAB/tesis/', 'preprocessing', 13, 'models_no_pinch_no_open', ['pinch', 'open'], 226,306); quit; catch ME; disp(ME); end;"
+
+
+
 
 exp 5 y 6 mejores
 9 y 10

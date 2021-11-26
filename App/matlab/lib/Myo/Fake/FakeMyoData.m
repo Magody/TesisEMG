@@ -7,6 +7,7 @@ classdef FakeMyoData < handle
         gyro_log = [];
         accel_log = [];
         isStreaming = false;
+        last_gesture = [];
     end
     
     properties(Access=private)
@@ -138,7 +139,7 @@ classdef FakeMyoData < handle
             end
             myoData.mock_gestures_length = length(myoData.mock_gestures);
             
-            myoData.index_gesture = 1;
+            myoData.index_gesture = randi([1,25]);
             myoData.inter_counter_emg = 1;
             
             if wasStreaming
@@ -167,8 +168,10 @@ classdef FakeMyoData < handle
             
             % always the same emg for quick test
             myoData.emg_log = [ myoData.emg_log; emg(index_emg_begin:index_emg_end, :) ];
+            myoData.last_gesture = myoData.mock_gestures{myoData.index_gesture};
             
             if select_next_gesture
+                
                 myoData.inter_counter_emg = 1; % reset
                 
                 myoData.index_gesture = mod(myoData.index_gesture+1, myoData.mock_gestures_length);

@@ -98,12 +98,16 @@ Rep = 150;  % below it is not controlled, is with length(responses)
 
 results = struct();
 
-for i=100:100 % num_users  % 3 for user100
+for i=1:num_users  % 3 for user100
     try
         user_folder = users(i).name;
         
         if user_folder == "user115" || user_folder == "user209"
             continue;
+        end
+        
+        if user_folder ~= "user10"
+           continue; 
         end
         
         context('offset_user') = 0;
