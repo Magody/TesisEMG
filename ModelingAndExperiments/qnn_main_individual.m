@@ -1,9 +1,8 @@
 %% Lib and dirs
 clc;
 clear all;
-path_to_framework = "/home/magody/programming/MATLAB/deep_learning_from_scratch/magody_framework";% "C:\Users\Magody\Documents\GitHub\MATLABMagodyFramework\magody_framework"; "/home/magody/programming/MATLAB/deep_learning_from_scratch/magody_framework";
-
-path_root = "/home/magody/programming/MATLAB/tesis/";
+path_root = "C:/Git/TesisEMG/";
+path_to_framework = "C:/Git/MATLABMagodyFramework";% "C:\Users\Magody\Documents\GitHub\MATLABMagodyFramework\magody_framework"; "/home/magody/programming/MATLAB/deep_learning_from_scratch/magody_framework";
 
 addpath(genpath(path_to_framework));
 addpath(path_root + "ModelingAndExperiments/utils")

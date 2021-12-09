@@ -3,7 +3,8 @@ clear all;
 close all;
 
 global path_root;
-path_root = "/home/magody/programming/MATLAB/tesis/";
+path_root = "C:/Git/TesisEMG/";
+path_to_framework = "C:/Git/MATLABMagodyFramework";% "C:\Users\Magody\Documents\GitHub\MATLABMagodyFramework\magody_framework"; "/home/magody/programming/MATLAB/deep_learning_from_scratch/magody_framework";
 
 addpath(genpath(path_root + "ModelingAndExperiments/RLSetup"));
 addpath(genpath(path_root + "ModelingAndExperiments/utils"));
@@ -16,7 +17,6 @@ addpath(genpath(path_root + "App/matlab/utils/timers"));
 addpath(path_root + "App/matlab/models/device");
 addpath(genpath(path_root + "App/matlab/data"));
 addpath(genpath(path_root + "App/matlab/media"));
-path_to_framework = "/home/magody/programming/MATLAB/deep_learning_from_scratch/magody_framework";% "C:\Users\Magody\Documents\GitHub\MATLABMagodyFramework\magody_framework"; "/home/magody/programming/MATLAB/deep_learning_from_scratch/magody_framework";
 addpath(genpath(path_to_framework));
 
 %% Parameters
@@ -33,29 +33,28 @@ user_id = 1;
 user_full_dir = path_root +"Data/preprocessingTest/";
 user_folder = "user"+user_id;
 is_legacy = false;
-userData = loadUserByNameAndDir(user_folder, char(user_full_dir), is_legacy);
 rng('default');
-orientation = getOrientation(userData, user_folder);
 
 sample_time_ms = 996;
 
 global model_complete model_incomplete context_for_model_complete context_for_model_incomplete;
 
-
+%{
+userData = loadUserByNameAndDir(user_folder, char(user_full_dir), is_legacy);
+orientation = getOrientation(userData, user_folder);
 model_complete = load(path_root + "App/matlab/data/userData" + user_id + "_modelComplete.mat");
 model_incomplete = load(path_root + "App/matlab/data/userData" + user_id + "_modelNoPinchNoOpen.mat");
 
-
 context_for_model_complete = generateContext(params, model_complete.classes_num_to_name);
 context_for_model_incomplete = generateContext(params, model_incomplete.classes_num_to_name);
-
+%}
 %% Start connection
 disp('CONNECTING, please, wait...');
 
 if deviceType == DeviceName.myo
 
-    [myoObject, isConnectedMyo] = connectMyo("fake");
-    % [myoObject, isConnectedMyo] = connectMyo();
+    % [myoObject, isConnectedMyo] = connectMyo("fake");
+    [myoObject, isConnectedMyo] = connectMyo("real");
 
     if isConnectedMyo
         disp('Device connected');
@@ -65,6 +64,21 @@ if deviceType == DeviceName.myo
 else
     fprintf("Device not supported\n");
 end
+
+% Sanity check
+
+if deviceType == DeviceName.myo
+    myoObject.myoData.stopStreaming();
+    myoObject.myoData.clearLogs();
+    myoObject.myoData.startStreaming();
+end
+pause(1);
+myoObject.myoData.stopStreaming();
+emg_sanity = myoObject.myoData.emg_log;
+% Or disconnect full, erasing some other variables
+disconnectMyo(myoObject);
+cleanAllTimers(); % sanity stop
+
 
 %% Read sensor and get features
 
