@@ -1,6 +1,6 @@
 classdef FakeMyoMex
     properties
-        myoData
+        myoData;
     end
 
     methods

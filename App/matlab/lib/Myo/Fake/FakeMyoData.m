@@ -63,8 +63,8 @@ classdef FakeMyoData < handle
         end
         
         function setUserSource(myoData, user_id)
-            
-            path_root = "/home/magody/programming/MATLAB/tesis/";
+            global path_root
+            % path_root = "/home/magody/programming/MATLAB/tesis/";
             
             userData = load(path_root + "Data/preprocessing/user" + user_id + "/userData.mat");
             myoData.all_gestures = userData.training;

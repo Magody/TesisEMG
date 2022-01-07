@@ -1,10 +1,12 @@
 clc;
 
-path_root = "/home/magody/programming/MATLAB/tesis/";
+path_root = "C:/Git/TesisEMG/";
+path_to_framework = "C:/Git/MATLABMagodyFramework";% "C:\Users\Magody\Documents\GitHub\MATLABMagodyFramework\magody_framework"; "/home/magody/programming/MATLAB/deep_learning_from_scratch/magody_framework";
+
 addpath(genpath(path_root + "GeneralLib"));
 
 %% Parameters and data
-save_name = "save_training-nopinchnoopen";
+save_name = "save_training-nopinchnoopen-specific";
 history_online1 = load(path_root + "App/matlab/data/saves/"+save_name+".mat");
 %history_online2 = load(path_root + "App/matlab/data/saves/save_training-nopinchnoopen-2.mat");
 history_experiments = containers.Map();
@@ -28,7 +30,7 @@ users_len = length(history_experiments);
 
 %% Stats
 
-iterations = 51;
+iterations = 20;
 
 
 total_confusion_matrix = cell([1, iterations]);
@@ -91,9 +93,9 @@ mean_recognition = total_recognition ./ users_len + 10;
 
 
 for j=1:iterations
-    total_confusion_matrix{1,j} = total_confusion_matrix{1,j} ./ users_len;
-    figure(4);
-    plotConfMat(total_confusion_matrix{1,j}, labels);
+    % total_confusion_matrix{1,j} = total_confusion_matrix{1,j} ./ users_len;
+    % figure(4);
+    % plotConfMat(total_confusion_matrix{1,j}, labels);
     % saveas(gcf,[char(path_root) 'App/matlab/figures/' char(save_name) num2str(j) '.png']);
     
 end

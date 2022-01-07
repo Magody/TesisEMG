@@ -11,7 +11,7 @@ addpath(path_root + "ModelingAndExperiments/RLSetup")
 addpath(path_root + "ModelingAndExperiments/Experiments")
 addpath(genpath(path_root + "GeneralLib"));
 
-path_output = path_root + "ModelingAndExperiments/models/models_test_low_umbral/";  % test_low_umbral
+path_output = path_root + "ModelingAndExperiments/models/models_unique/";  % test_low_umbral
 
 path_to_data_for_train = horzcat(char(path_root),'Data/preprocessing/'); % 'C:\Users\Magody\Documents\GitHub\TesisEMG\Data\preprocessing\'; % '/home/magody/programming/MATLAB/tesis/Data/preprocessing/';
 path_to_data_for_testing = horzcat(char(path_root),'Data/preprocessing/'); % 'C:\Users\Magody\Documents\GitHub\TesisEMG\Data\preprocessing\'; % '/home/magody/programming/MATLAB/tesis/Data/preprocessing/';
@@ -21,7 +21,7 @@ version = 'testing';
 
 %% set parameters
 verbose_level = 2;
-experiment_id = 12;
+experiment_id = 1;
 experiment_mode = "individual";
 
 
@@ -47,7 +47,7 @@ accuracy_classification_window = 0;
 accuracy_classification = 0;
 accuracy_recognition = 0;
 % This script is for individual model only
-for user_id=189:189 % num_users
+for user_id=307:307 % num_users
     try
         user_folder = "user"+user_id;
         params.qnn_model_dir_name = path_output + params.model_name + "-" + user_folder + ".mat";    
@@ -62,6 +62,7 @@ for user_id=189:189 % num_users
                                             hyperparams.general_epochs, do_validation, context, params.verbose_level-1);
 
         if do_validation
+            summary{hyperparams.general_epochs, 2}
             accuracy_classification_window = accuracy_classification_window + summary{hyperparams.general_epochs, 2}.classification_window_validation.accuracy;
             accuracy_classification = accuracy_classification + summary{hyperparams.general_epochs, 2}.classification_validation.accuracy;
             accuracy_recognition = accuracy_recognition + summary{hyperparams.general_epochs, 2}.recognition_validation.accuracy;

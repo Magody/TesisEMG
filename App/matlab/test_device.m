@@ -39,15 +39,25 @@ sample_time_ms = 996;
 
 global model_complete model_incomplete context_for_model_complete context_for_model_incomplete;
 
-%{
 userData = loadUserByNameAndDir(user_folder, char(user_full_dir), is_legacy);
 orientation = getOrientation(userData, user_folder);
-model_complete = load(path_root + "App/matlab/data/userData" + user_id + "_modelComplete.mat");
-model_incomplete = load(path_root + "App/matlab/data/userData" + user_id + "_modelNoPinchNoOpen.mat");
+
+data_dir1 = path_root + "App/matlab/data/models_complete/complete-user" + user_id + ".mat";
+data_dir2 = path_root + "App/matlab/data/models_complete/complete-user" + user_id + ".mat";
+
+model_complete = load(data_dir1);
+model_incomplete = load(data_dir2);
 
 context_for_model_complete = generateContext(params, model_complete.classes_num_to_name);
 context_for_model_incomplete = generateContext(params, model_incomplete.classes_num_to_name);
-%}
+
+%% timers check
+myWaitbarTimer = timerWaitbar(2);
+start(myWaitbarTimer);
+
+%% Clean
+cleanAllTimers();
+
 %% Start connection
 disp('CONNECTING, please, wait...');
 
@@ -72,12 +82,36 @@ if deviceType == DeviceName.myo
     myoObject.myoData.clearLogs();
     myoObject.myoData.startStreaming();
 end
-pause(1);
+
+% myWaitbarTimer = timerWaitbar(2);
+% start(myWaitbarTimer);
+
+activate = true;
+l = length(myoObject.myoData.emg_log);
+last_norm = -1;
+while l < 1100
+    norm = floor(l/10) * 10;
+    if mod(norm, 100) == 0
+        if norm ~= last_norm
+            last_norm = norm;
+            disp(l);
+        end
+    end
+    if activate && l > 100 && l < 200
+        disp("BEGIN!!!");
+        activate = false;
+    end
+    l = length(myoObject.myoData.emg_log);
+end
+disp("END!!");
+
 myoObject.myoData.stopStreaming();
 emg_sanity = myoObject.myoData.emg_log;
 % Or disconnect full, erasing some other variables
 disconnectMyo(myoObject);
 cleanAllTimers(); % sanity stop
+
+plot(emg_sanity)
 
 
 %% Read sensor and get features
