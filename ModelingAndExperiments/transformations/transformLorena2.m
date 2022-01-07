@@ -8,7 +8,7 @@ addpath(genpath(path_root + "GeneralLib"));
 addpath(genpath(path_root + "ModelingAndExperiments"));
 
 %%
-
+win = 1000;
 user_folder_name = "user309";
 
 user0_original = load('C:\Git\TesisEMG\Data\preprocessing\user01/LorenaBaronaDate2\userData.mat');
@@ -44,7 +44,7 @@ resp1 = user0.training;
 
 for from=1:25:150
     disp(from);
-    dataset = customGenerate(data_train.("id"+from), resp1, from, string(data_train_names(from)));
+    dataset = customGenerate(data_train.("id"+from), resp1, from, string(data_train_names(from)), win);
     
     resp1(1, from:(from+24)) = dataset(:);
 end
@@ -65,7 +65,7 @@ resp2 = user0.training;
 
 for from=1:25:150
     disp(from);
-    dataset = customGenerate(data_train.("id"+from), resp2, from, string(data_train_names(from)));
+    dataset = customGenerate(data_train.("id"+from), resp2, from, string(data_train_names(from)),win);
     
     resp2(1, from:(from+24)) = dataset(:);
 end

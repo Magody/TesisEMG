@@ -62,7 +62,7 @@ function transferNetwork(app, model_reference, classes, userData)
     for i=1:sequential_network_length-1
         network_new{1, i} = temp{i};
 
-        if mod(i,2) ~= 0
+        if network_new{1, i}.name == "Dense"
 
             network_new{1, i}.vdw = 0;
             network_new{1, i}.vdb = 0;

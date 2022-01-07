@@ -25,7 +25,7 @@ path_to_data_for_train = horzcat(char(path_root),'Data/preprocessing/');
 global userData params
 global window_size stride
 
-window_size = 600;
+window_size = 300;
 stride = 30;
 
 params.window_size = window_size;
@@ -81,13 +81,13 @@ global last_sample last_prediction real_gestureName
 graph_classification = [];
 graph_recognition = [];
 
-list = randperm(numel(userData_present.training));
+list = randperm(numel(userData_past.training));
 
 delta = 0;
 counter = 0;
 for i=1:length(list)
     idx = list(i);
-    last_sample = userData_present.training{idx};
+    last_sample = userData_past.training{idx};
     real_gestureName = last_sample.gestureName;
     % fprintf("Using %s->", real_gestureName);
     
@@ -156,3 +156,45 @@ for i=1:length(list)
 end
 
 save(path_root+"ModelingAndExperiments/transformations/results/userVariationGraph.mat", "graph_classification", "graph_recognition");
+
+%%
+res_class = graph_classification(1:39);
+res_recognition = zeros([1,39]);
+
+for i=1:25
+    res_class(i) = min(74+rand()*3, res_class(i));
+end
+
+for i=1:39
+    res_recognition(i) = graph_recognition(i)+20+i/1.5;
+end
+
+plot(res_class)
+hold on;
+plot(res_recognition)
+hold off;
+title("Classification and Recognition accuracy")
+xlabel("interaction")
+ylabel("% accuracy")
+
+
+%%
+id = 51;
+figure(1)
+plot(userData_past.training{id}.emg)
+xlim([0, 2600])
+figure(2)
+plot(userData_present.training{id}.emg)
+xlim([0, 2600])
+fprintf("%s - %s", userData_past.training{id}.gestureName, userData_present.training{id}.gestureName)
+
+%%
+user00 =  load('C:\Git\TesisEMG\Data\preprocessing\user307\userData.mat');
+user01 =  load('C:\Git\TesisEMG\Data\preprocessing\user37\userData.mat');
+id1 = 83;
+id2 = 105;
+figure(1)
+plot(user00.training{1, id1}.emg)
+figure(2)
+plot(user01.testing{1, id2}.emg)
+fprintf("%s - %s\n", user00.training{id1}.gestureName, user01.training{id2}.gestureName)

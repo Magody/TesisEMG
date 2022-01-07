@@ -21,7 +21,7 @@ version = 'testing';
 
 %% set parameters
 verbose_level = 2;
-experiment_id = 13;
+experiment_id = 14;
 experiment_mode = "individual";
 
 
@@ -33,7 +33,7 @@ hyperparams.executeEpisodeEMG = @executeEpisodeEMG;
 hyperparams.customRunEpisodesEMG = @customRunEpisodesEMG;
 
 gestures_list = ["waveOut", "waveIn", "fist", "open", "pinch", "noGesture"];
-ignoreGestures = ["open", "pinch"];  % ["open", "pinch"];
+ignoreGestures = [];  % ["open", "pinch"];
 classes_num_to_name = getClassNumToName(gestures_list, ignoreGestures);    
 context = generateContext(params, classes_num_to_name);
 
@@ -47,7 +47,8 @@ accuracy_classification_window = 0;
 accuracy_classification = 0;
 accuracy_recognition = 0;
 % This script is for individual model only
-for user_id=307:309 % num_users
+c = 0;
+for user_id=308:309 % num_users
     try
         user_folder = "user"+user_id;
         params.qnn_model_dir_name = path_output + params.model_name + "-" + user_folder + ".mat";    
@@ -62,7 +63,9 @@ for user_id=307:309 % num_users
                                             hyperparams.general_epochs, do_validation, context, params.verbose_level-1);
 
         if do_validation
-            summary{hyperparams.general_epochs, 2}.recognition_validation
+            disp("Results")
+            disp(summary{hyperparams.general_epochs, 2}.classification_validation);
+            disp(summary{hyperparams.general_epochs, 2}.recognition_validation);
             accuracy_classification_window = accuracy_classification_window + summary{hyperparams.general_epochs, 2}.classification_window_validation.accuracy;
             accuracy_classification = accuracy_classification + summary{hyperparams.general_epochs, 2}.classification_validation.accuracy;
             accuracy_recognition = accuracy_recognition + summary{hyperparams.general_epochs, 2}.recognition_validation.accuracy;
@@ -73,7 +76,7 @@ for user_id=307:309 % num_users
         end
 
         ExperimentHelper.saveModel(params.qnn_model_dir_name, q_neural_network, history_episodes_by_epoch, summary, context);
-
+        c = c + 1;
     catch exception
         fprintf("Error with %s, \n%s\n", user_folder, exception.message + "->" + ...
                 exception.stack(1).name + " line: " + exception.stack(1).line);
@@ -83,7 +86,7 @@ t_end = toc(t_begin);
 if params.verbose_level > 0
     fprintf("Elapsed time: %.4f [minutes]\n", t_end/60);
     fprintf("Final class: %.4f, Final recognition: %.4f\n", ...
-        accuracy_classification/num_users, accuracy_recognition/num_users); 
+        accuracy_classification/c, accuracy_recognition/c); 
 end
 
 %% Test

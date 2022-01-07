@@ -1,4 +1,4 @@
-function dataset = customGenerate(data, resp, from, class)
+function dataset = customGenerate(data, resp, from, class,win)
 
     
     
@@ -17,7 +17,7 @@ function dataset = customGenerate(data, resp, from, class)
         dataset{1, i}.emg = data{index}.emg;
 
         dataset{1, i}.pose_myo = [];
-        if isfield(dataset{1, i}, "pose_myo")
+        if isfield(data{index}, "pose_myo")
             dataset{1, i}.pose_myo = data{index}.pose_myo;
         end
          
@@ -36,7 +36,7 @@ function dataset = customGenerate(data, resp, from, class)
             else
                 index_begin = data{index}.pointGestureBegins;
                 emg_length = length(data{index}.emg);
-                dataset{1, i}.groundTruthIndex = [index_begin, min(index_begin+250, emg_length)];
+                dataset{1, i}.groundTruthIndex = [index_begin, min(index_begin+win, emg_length)];
                 dataset{1, i}.groundTruth = zeros([1, emg_length]);
                 dataset{1, i}.groundTruth(dataset{1, i}.groundTruthIndex(1):dataset{1, i}.groundTruthIndex(2)) = 1;
                 
@@ -44,7 +44,7 @@ function dataset = customGenerate(data, resp, from, class)
             
      
         end
-        dataset{1, i}.pointGestureBegins = dataset{1, i}.groundTruthIndex(1);
+        dataset{1, i}.pointGestureBegins = data{index}.pointGestureBegins;
         
     end
 end

@@ -4,7 +4,7 @@ function data = generateDataAugmentation(app, sample)
     features_name = sample.features_name;
     
     data_augmentation_moving_avg_box = {};
-    for i=2:15
+    for i=7:15
         emg_new = movmean(sample.emg, i);
         features_per_window = extractFeaturesByWindowStride(path_root, orientation, window_size, stride, emg_new);
         
@@ -17,7 +17,7 @@ function data = generateDataAugmentation(app, sample)
     end
     
     data_augmentation_shift = {};
-    for i=1:10
+    for i=5:10
         shift = i*5;
         emg_length = size(sample.emg, 1);
         emg_new_left = zeros(size(sample.emg));

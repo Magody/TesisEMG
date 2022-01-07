@@ -28,19 +28,20 @@
     % only is labeled the ground truth part
     
     action_no_gesture = classes_name_to_num("noGesture");
+    action_taken = classes_name_to_num(last_prediction);
     
     for index_state=1:num_windows
         action = gt_gestures_labels_num(index_state);
-        %{
-        if action == action_no_gesture
-            % we dont know if was correct or incorrect
-            continue;
-        end
-        %}
         state = states(index_state, :);
         new_state = state;
         is_terminal = index_state == num_windows;
-        qnn_online.saveExperienceReplay(state', action, last_reward, new_state', is_terminal)
+        if action == action_no_gesture
+            % we dont know if was correct or incorrect
+            qnn_online.saveExperienceReplay(state', action, 1, new_state', is_terminal)
+        else
+            qnn_online.saveExperienceReplay(state', action_taken, last_reward, new_state', is_terminal);
+        end
+        
         
     end
     
@@ -64,7 +65,7 @@
     end
     
     train_from_dataset = false;
-        
+
     if add_to_dataset
         limit = 50;
         last_sample.gestureName = real_gestureName; % string(last_gesture.gestureName);
@@ -82,16 +83,16 @@
         
         train_from_dataset = true;
         
-        
+    else
+
     end
     global counter
-    counter = counter + 1;
-    if mod(counter, 30) == 0
+    if mod(counter,10) == 0
         % train full each intervals
         train_from_dataset = true;
     end
-        
+    counter = counter + 1;
     
     learn(null(1), train_from_dataset);
-    
+
 end
