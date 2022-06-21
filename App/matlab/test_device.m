@@ -3,8 +3,8 @@ clear all;
 close all;
 
 global path_root;
-path_root = "C:/Git/TesisEMG/";
-path_to_framework = "C:/Git/MATLABMagodyFramework";% "C:\Users\Magody\Documents\GitHub\MATLABMagodyFramework\magody_framework"; "/home/magody/programming/MATLAB/deep_learning_from_scratch/magody_framework";
+path_root = "C:/Users/danny/Documents/Programming/MATLAB/TesisEMG/";
+path_to_framework = "C:/Users/danny/Documents/Programming/MATLAB/MATLABMagodyFramework";% "C:\Users\Magody\Documents\GitHub\MATLABMagodyFramework\magody_framework"; "/home/magody/programming/MATLAB/deep_learning_from_scratch/magody_framework";
 
 addpath(genpath(path_root + "ModelingAndExperiments/RLSetup"));
 addpath(genpath(path_root + "ModelingAndExperiments/utils"));

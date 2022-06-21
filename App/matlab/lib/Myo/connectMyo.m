@@ -4,6 +4,7 @@ function [myoObject, isConnectedMyo] = connectMyo(type)
     %}
 
     isConnectedMyo = 1;
+    disp("Connecting myo...SIM:" + type);
     
     
     try
@@ -12,12 +13,17 @@ function [myoObject, isConnectedMyo] = connectMyo(type)
             myoObject = MyoMex();
             %         beep
             % myoObject.myoData.startStreaming();
+            isConnectedMyo = 1;
+             disp("Connected real");
         elseif type == "fake"
             myoObject = FakeMyoMex();
-            % isConnectedMyo = myoObject.myoData.isStreaming;
+            isConnectedMyo = myoObject.myoData.isStreaming;
+             disp("Connected fake");
         end
-    catch
+    catch ME
         % No conexión posible
+        disp("Error connecting");
+        disp(ME);
         isConnectedMyo = 0;
     end
 end
